@@ -1,145 +1,331 @@
-import { useState } from 'react';
-
 import {
-    ScrollView,
+    Keyboard,
+    Pressable,
     StyleSheet,
     Text,
     View,
 } from 'react-native';
 
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+    useEffect,
+    useState,
+} from 'react';
+
+import { Clock3, Search, } from 'lucide-react-native';
+
+import {
+    useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import SearchBar from '../components/SearchBar';
-import CategoryList from '../components/CategoryList';
-import EventCard from '../components/EventCard';
+
+import type {
+    SearchStackScreenProps,
+} from '../navigation/types';
 
 import {
     COLORS,
+    RADIUS,
     SPACING,
     TYPOGRAPHY,
 } from '../constants/theme';
 
-const categories = [
-    'Music',
-    'Sports',
-    'Festival',
-    'Art',
-    'Theatre',
-];
+type Props =
+    SearchStackScreenProps<'Search'>;
 
-const events = [
-    {
-        id: 'sheffield-music-festival',
-        title: 'Sheffield Music Festival',
-        imageUrl: require('../../assets/images/festival.jpg'),
-        date: 'Sep 20',
-        location: 'Sheffield, UK',
-        category: 'Music',
-    },
-];
 
-export default function SearchScreen() {
-    const insets = useSafeAreaInsets();
 
-    const [searchQuery, setSearchQuery] =
-        useState('');
+export default function SearchScreen({
+    navigation,
+}: Props) {
+    const insets =
+        useSafeAreaInsets();
 
-    const [selectedCategory, setSelectedCategory] =
-        useState('Music');
+    const [
+        searchQuery,
+        setSearchQuery,
+    ] = useState('');
 
-    const query = searchQuery.trim().toLowerCase();
+    const [
+        recentSearch,
+        setRecentSearch,
+    ] = useState('');
 
-    const filteredEvents =
-        query.length === 0
-            ? []
-            : events.filter((event) => {
-                  const matchesSearch =
-                      event.title
-                          .toLowerCase()
-                          .includes(query) ||
-                      event.location
-                          .toLowerCase()
-                          .includes(query) ||
-                      event.category
-                          .toLowerCase()
-                          .includes(query);
+    /*
+     * Search is intentionally kept in memory
+     * for this assignment.
+     *
+     * The last search is displayed on the
+     * Search screen after returning to it.
+     */
+    useEffect(() => {
+        /*
+         * The previous search is passed through
+         * navigation when returning from results.
+         *
+         * Nothing is loaded from the API here.
+         */
+    }, []);
 
-                  const matchesCategory =
-                      event.category ===
-                      selectedCategory;
+    /*
+     * Open SearchResults with the current query.
+     */
+    const handleSearch = () => {
+        const value =
+            searchQuery.trim();
 
-                  return (
-                      matchesSearch &&
-                      matchesCategory
-                  );
-              });
+        if (!value) {
+            return;
+        }
+
+        Keyboard.dismiss();
+
+        setRecentSearch(value);
+
+        navigation.navigate(
+            'SearchResults',
+            {
+                query: value,
+                sort: 'date',
+            },
+        );
+    };
+
+    /*
+     * Use the recent search again.
+     */
+    const handleRecentSearch = () => {
+        if (!recentSearch) {
+            return;
+        }
+
+        setSearchQuery(
+            recentSearch,
+        );
+
+        navigation.navigate(
+            'SearchResults',
+            {
+                query:
+                    recentSearch,
+                sort: 'date',
+            },
+        );
+    };
+
+    /*
+     * Remove the recent search.
+     */
+    const clearRecentSearch = () => {
+        setRecentSearch('');
+    };
 
     return (
         <View
             style={[
                 styles.container,
                 {
-                    paddingTop: insets.top,
+                    paddingTop:
+                        insets.top,
                 },
             ]}
         >
-            <ScrollView
-                contentContainerStyle={[
+            <View
+                style={[
                     styles.content,
                     {
                         paddingBottom:
-                            insets.bottom + SPACING.lg,
+                            insets.bottom +
+                            SPACING.lg,
                     },
                 ]}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="always"
             >
-                <Text style={styles.title}>
-                    Search events
-                </Text>
-
-                <SearchBar
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                />
-
-                <Text style={styles.sectionTitle}>
-                    Categories
-                </Text>
-
-                <CategoryList
-                    categories={categories}
-                    selectedCategory={selectedCategory}
-                    onSelectCategory={
-                        setSelectedCategory
+                {/* Header */}
+                <View
+                    style={
+                        styles.header
                     }
-                />
-
-                <Text style={styles.sectionTitle}>
-                    Results
-                </Text>
-
-                {query.length === 0 ? (
-                    <Text style={styles.message}>
-                        Start typing to search for events.
+                >
+                    <Text
+                        style={
+                            styles.title
+                        }
+                    >
+                        Search events
                     </Text>
-                ) : filteredEvents.length > 0 ? (
-                    filteredEvents.map((event) => (
-                        <EventCard
-                            key={event.id}
-                            title={event.title}
-                            imageUrl={event.imageUrl}
-                            date={event.date}
-                            location={event.location}
-                            onPress={() => {}}
+                </View>
+
+                {/* Search input */}
+                <View
+                    style={
+                        styles.searchContainer
+                    }
+                >
+                    <SearchBar
+                        value={
+                            searchQuery
+                        }
+                        onChangeText={
+                            setSearchQuery
+                        }
+                        onSubmitEditing={
+                            handleSearch
+                        }
+                        placeholder="Search events"
+                    />
+                </View>
+
+                {/* Recent search */}
+                {recentSearch ? (
+                    <View
+                        style={
+                            styles.recentSection
+                        }
+                    >
+                        <View
+                            style={
+                                styles.sectionHeader
+                            }
+                        >
+                            <Text
+                                style={
+                                    styles.sectionTitle
+                                }
+                            >
+                                Recent search
+                            </Text>
+
+                            <Pressable
+                                onPress={
+                                    clearRecentSearch
+                                }
+                                hitSlop={8}
+                                accessibilityRole="button"
+                                accessibilityLabel="Clear recent search"
+                            >
+                                <Text
+                                    style={
+                                        styles.clearText
+                                    }
+                                >
+                                    Clear
+                                </Text>
+                            </Pressable>
+                        </View>
+
+                        <Pressable
+                            onPress={
+                                handleRecentSearch
+                            }
+                            style={
+                                styles.recentItem
+                            }
+                        >
+                            <View
+                                style={
+                                    styles.recentIcon
+                                }
+                            >
+                                <Clock3
+                                    size={16}
+                                    color={
+                                        COLORS.textSecondary
+                                    }
+                                />
+                            </View>
+
+                            <Text
+                                style={
+                                    styles.recentText
+                                }
+                                numberOfLines={
+                                    1
+                                }
+                            >
+                                {
+                                    recentSearch
+                                }
+                            </Text>
+
+                            <Search
+                                size={16}
+                                color={
+                                    COLORS.primary
+                                }
+                            />
+                        </Pressable>
+                    </View>
+                ) : null}
+
+                {/* Search hint */}
+                {!recentSearch &&
+                    !searchQuery.trim() && (
+                        <View
+                            style={
+                                styles.emptyState
+                            }
+                        >
+                            <View
+                                style={
+                                    styles.emptyIcon
+                                }
+                            >
+                                <Search
+                                    size={22}
+                                    color={
+                                        COLORS.primary
+                                    }
+                                />
+                            </View>
+
+                            <Text
+                                style={
+                                    styles.emptyTitle
+                                }
+                            >
+                                Find your next event
+                            </Text>
+
+                            <Text
+                                style={
+                                    styles.emptyText
+                                }
+                            >
+                                Search for concerts,
+                                sports, theatre,
+                                festivals and more.
+                            </Text>
+                        </View>
+                    )}
+
+                {/* Search action */}
+                {searchQuery.trim() ? (
+                    <Pressable
+                        onPress={
+                            handleSearch
+                        }
+                        style={
+                            styles.searchButton
+                        }
+                        accessibilityRole="button"
+                    >
+                        <Search
+                            size={18}
+                            color={
+                                COLORS.background
+                            }
                         />
-                    ))
-                ) : (
-                    <Text style={styles.message}>
-                        No events found.
-                    </Text>
-                )}
-            </ScrollView>
+
+                        <Text
+                            style={
+                                styles.searchButtonText
+                            }
+                        >
+                            Search
+                        </Text>
+                    </Pressable>
+                ) : null}
+            </View>
         </View>
     );
 }
@@ -147,12 +333,21 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: COLORS.background,
+        backgroundColor:
+            COLORS.background,
     },
 
     content: {
-        padding: SPACING.lg,
-        gap: SPACING.md,
+        flex: 1,
+        paddingHorizontal:
+            SPACING.lg,
+    },
+
+    header: {
+        paddingTop:
+            SPACING.lg,
+        marginBottom:
+            SPACING.md,
     },
 
     title: {
@@ -161,17 +356,127 @@ const styles = StyleSheet.create({
         color: COLORS.text,
     },
 
-    sectionTitle: {
-        ...TYPOGRAPHY.semiBold,
-        fontSize: 14,
-        color: COLORS.text,
-        marginTop: SPACING.sm,
+    searchContainer: {
+        width: '100%',
     },
 
-    message: {
+    recentSection: {
+        marginTop:
+            SPACING.lg,
+    },
+
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent:
+            'space-between',
+        marginBottom:
+            SPACING.sm,
+    },
+
+    sectionTitle: {
+        ...TYPOGRAPHY.semiBold,
+        fontSize: 13,
+        color: COLORS.text,
+    },
+
+    clearText: {
+        ...TYPOGRAPHY.medium,
+        fontSize: 10,
+        color: COLORS.primary,
+    },
+
+    recentItem: {
+        minHeight: 48,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal:
+            SPACING.md,
+        borderRadius:
+            RADIUS.md,
+        backgroundColor:
+            COLORS.card,
+        borderWidth: 1,
+        borderColor:
+            COLORS.border,
+    },
+
+    recentIcon: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        alignItems: 'center',
+        justifyContent:
+            'center',
+        backgroundColor:
+            COLORS.primaryLight,
+    },
+
+    recentText: {
+        flex: 1,
+        marginHorizontal:
+            SPACING.sm,
         ...TYPOGRAPHY.regular,
         fontSize: 12,
+        color: COLORS.text,
+    },
+
+    emptyState: {
+        alignItems: 'center',
+        justifyContent:
+            'center',
+        paddingHorizontal:
+            SPACING.lg,
+        marginTop: 100,
+    },
+
+    emptyIcon: {
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+        alignItems: 'center',
+        justifyContent:
+            'center',
+        backgroundColor:
+            COLORS.primaryLight,
+        marginBottom:
+            SPACING.md,
+    },
+
+    emptyTitle: {
+        ...TYPOGRAPHY.semiBold,
+        fontSize: 15,
+        color: COLORS.text,
+        textAlign: 'center',
+        marginBottom: 6,
+    },
+
+    emptyText: {
+        ...TYPOGRAPHY.regular,
+        fontSize: 11,
+        lineHeight: 16,
         color: COLORS.textSecondary,
-        marginTop: SPACING.sm,
+        textAlign: 'center',
+    },
+
+    searchButton: {
+        height: 44,
+        marginTop:
+            SPACING.lg,
+        borderRadius:
+            RADIUS.sm,
+        backgroundColor:
+            COLORS.primary,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent:
+            'center',
+        gap: 8,
+    },
+
+    searchButtonText: {
+        ...TYPOGRAPHY.semiBold,
+        fontSize: 12,
+        color: COLORS.background,
     },
 });

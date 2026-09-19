@@ -7,7 +7,13 @@ import {
     View,
 } from 'react-native';
 
-import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../constants/theme';
+import {
+    COLORS,
+    RADIUS,
+    SPACING,
+    TYPOGRAPHY,
+} from '../constants/theme';
+
 import CustomButton from './CustomButton';
 
 interface EventCardProps {
@@ -25,7 +31,8 @@ export default function EventCard({
     location,
     onPress,
 }: EventCardProps) {
-    const { width } = useWindowDimensions();
+    const { width } =
+        useWindowDimensions();
 
     const cardWidth = Math.min(
         250,
@@ -51,21 +58,31 @@ export default function EventCard({
                 ]}
             />
 
-            <Text style={styles.date}>
-                {date}
-            </Text>
+            <View style={styles.dateBadge}>
+                <Text style={styles.date}>
+                    {date}
+                </Text>
+            </View>
 
             <View style={styles.content}>
-                <Text style={styles.title}>
+                <Text
+                    style={styles.title}
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                >
                     {title}
                 </Text>
 
-                <Text style={styles.location}>
+                <Text
+                    style={styles.location}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                >
                     {location}
                 </Text>
 
                 <CustomButton
-                    title="View details"
+                    title="View event"
                     variant="secondary"
                     onPress={onPress}
                     style={{
@@ -82,7 +99,6 @@ export default function EventCard({
 
 const styles = StyleSheet.create({
     card: {
-        position: 'relative',
         height: 245,
         borderRadius: RADIUS.md,
         backgroundColor: COLORS.card,
@@ -93,30 +109,36 @@ const styles = StyleSheet.create({
         height: 120,
     },
 
-    date: {
+    dateBadge: {
         position: 'absolute',
         top: 10,
         right: 10,
         width: 61,
         height: 24,
-        paddingVertical: 6,
         borderRadius: RADIUS.sm,
         backgroundColor: COLORS.primary,
-        color: COLORS.background,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    date: {
         ...TYPOGRAPHY.semiBold,
         fontSize: 10,
+        color: COLORS.background,
         letterSpacing: 0.5,
         textAlign: 'center',
         textTransform: 'uppercase',
     },
 
     content: {
-        padding: SPACING.md,
+        flex: 1,
+        padding: SPACING.sm,
     },
 
     title: {
         ...TYPOGRAPHY.bold,
         fontSize: 14,
+        lineHeight: 17,
         color: COLORS.text,
         marginBottom: 4,
     },
@@ -124,13 +146,13 @@ const styles = StyleSheet.create({
     location: {
         ...TYPOGRAPHY.regular,
         fontSize: 12,
-        lineHeight: 16,
+        lineHeight: 14,
         letterSpacing: 0.12,
         color: COLORS.textSecondary,
     },
 
     cardButton: {
-        height: 40,
-        marginTop: SPACING.md,
+        height: 36,
+        marginTop: 'auto',
     },
 });

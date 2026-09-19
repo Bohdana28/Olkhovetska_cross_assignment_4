@@ -5,6 +5,9 @@ export const SCREENS = {
     HOME_SCREEN: 'HomeScreen',
 
     SEARCH: 'Search',
+    SEARCH_RESULTS: 'SearchResults',
+    SEARCH_FILTER: 'SearchFilter',
+
     BOOKINGS: 'Bookings',
     PROFILE: 'Profile',
 

@@ -1,15 +1,36 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
-
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { DrawerScreenProps } from '@react-navigation/drawer';
 
-/**
- * Navigation types for the main event flow.
- *
- * The Home stack contains the complete booking process:
- * HomeScreen → Event Details → Tickets → Summary → Payment → Confirmation.
- */
+export type SearchSort = 'date' | 'name';
+
+export type SearchStackParamList = {
+    Search: undefined;
+
+    SearchResults: {
+        query: string;
+        category?: string;
+        minPrice?: number;
+        maxPrice?: number;
+        location?: string;
+        sort?: SearchSort;
+        startDateTime?: string;
+        endDateTime?: string;
+    };
+
+    SearchFilter: {
+        query: string;
+        category?: string;
+        minPrice?: number;
+        maxPrice?: number;
+        location?: string;
+        sort?: SearchSort;
+        startDateTime?: string;
+        endDateTime?: string;
+    };
+};
+
 export type HomeStackParamList = {
     HomeScreen: undefined;
 
@@ -47,7 +68,7 @@ export type HomeStackParamList = {
 
 export type MainTabParamList = {
     Home: NavigatorScreenParams<HomeStackParamList>;
-    Search: undefined;
+    Search: NavigatorScreenParams<SearchStackParamList>;
     Bookings: undefined;
     Profile: undefined;
 };
@@ -62,6 +83,13 @@ export type HomeStackScreenProps<
     RouteName extends keyof HomeStackParamList,
 > = NativeStackScreenProps<
     HomeStackParamList,
+    RouteName
+>;
+
+export type SearchStackScreenProps<
+    RouteName extends keyof SearchStackParamList,
+> = NativeStackScreenProps<
+    SearchStackParamList,
     RouteName
 >;
 

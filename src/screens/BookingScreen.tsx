@@ -1,6 +1,5 @@
-import { useState } from 'react';
-
 import {
+    ActivityIndicator,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -8,7 +7,14 @@ import {
     View,
 } from 'react-native';
 
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+    useEffect,
+    useState,
+} from 'react';
+
+import {
+    useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import type { HomeStackScreenProps } from '../navigation/types';
 
@@ -22,7 +28,13 @@ import {
     TYPOGRAPHY,
 } from '../constants/theme';
 
-type Props = HomeStackScreenProps<'Booking'>;
+import {
+    fetchEventById,
+    TicketmasterEvent,
+} from '../api/api';
+
+type Props =
+    HomeStackScreenProps<'Booking'>;
 
 const SERVICE_FEE = 2.5;
 
@@ -30,7 +42,8 @@ export default function BookingScreen({
     navigation,
     route,
 }: Props) {
-    const insets = useSafeAreaInsets();
+    const insets =
+        useSafeAreaInsets();
 
     const {
         eventId,
@@ -39,33 +52,115 @@ export default function BookingScreen({
         ticketPrice,
     } = route.params;
 
+    const [event, setEvent] =
+        useState<TicketmasterEvent | null>(
+            null,
+        );
+
+    const [loading, setLoading] =
+        useState(true);
+
+    const [error, setError] =
+        useState<string | null>(null);
+
     const [quantity, setQuantity] =
         useState(initialQuantity);
 
-    /**
-     * Calculate the ticket price based on
-     * the current quantity.
-     */
+    useEffect(() => {
+        const loadEvent = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const data =
+                    await fetchEventById(
+                        eventId,
+                    );
+
+                setEvent(data);
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : 'Failed to load event.',
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadEvent();
+    }, [eventId]);
+
+    const formatTime = (
+        time?: string,
+    ) => {
+        if (!time) {
+            return null;
+        }
+
+        return time.slice(0, 5);
+    };
+
+    const formatDate = (
+        date?: string,
+        time?: string,
+    ) => {
+        if (!date) {
+            return 'Date TBA';
+        }
+
+        const parsedDate =
+            new Date(date);
+
+        const formattedDate =
+            parsedDate.toLocaleDateString(
+                'en-GB',
+                {
+                    day: '2-digit',
+                    month: 'short',
+                },
+            );
+
+        const formattedTime =
+            formatTime(time);
+
+        return formattedTime
+            ? `${formattedDate} • ${formattedTime}`
+            : formattedDate;
+    };
+
+    const getLocation = () => {
+        const venue =
+            event?._embedded
+                ?.venues?.[0];
+
+        if (!venue) {
+            return 'Location TBA';
+        }
+
+        const parts = [
+            venue.name,
+            venue.city?.name,
+        ].filter(Boolean);
+
+        return (
+            parts.join(', ') ||
+            'Location TBA'
+        );
+    };
+
     const ticketTotal =
         quantity * ticketPrice;
 
-    /**
-     * Service fee is fixed for this demo.
-     */
     const total =
-        ticketTotal + SERVICE_FEE;
+        ticketTotal +
+        SERVICE_FEE;
 
-    /**
-     * Return to the previous screen.
-     */
     const handleCancel = () => {
         navigation.goBack();
     };
 
-    /**
-     * Continue to payment with the current
-     * quantity and ticket information.
-     */
     const handleContinue = () => {
         navigation.navigate(
             'Payment',
@@ -78,45 +173,139 @@ export default function BookingScreen({
         );
     };
 
+    if (loading) {
+        return (
+            <View
+                style={
+                    styles.center
+                }
+            >
+                <ActivityIndicator
+                    size="large"
+                    color={
+                        COLORS.primary
+                    }
+                />
+
+                <Text
+                    style={
+                        styles.loadingText
+                    }
+                >
+                    Loading booking...
+                </Text>
+            </View>
+        );
+    }
+
+    if (error || !event) {
+        return (
+            <View
+                style={
+                    styles.center
+                }
+            >
+                <Text
+                    style={
+                        styles.errorTitle
+                    }
+                >
+                    Event not found
+                </Text>
+
+                <Text
+                    style={
+                        styles.errorText
+                    }
+                >
+                    {error ??
+                        "We couldn't load this event."}
+                </Text>
+
+                <CustomButton
+                    title="Go back"
+                    variant="primary"
+                    onPress={() =>
+                        navigation.goBack()
+                    }
+                />
+            </View>
+        );
+    }
+
+    const imageUrl =
+        event.images?.[0]?.url;
+
     return (
-        <View style={styles.container}>
+        <View
+            style={
+                styles.container
+            }
+        >
             <ScrollView
-                showsVerticalScrollIndicator={false}
+                showsVerticalScrollIndicator={
+                    false
+                }
                 contentContainerStyle={[
                     styles.content,
                     {
                         paddingTop:
-                            insets.top + SPACING.sm,
+                            insets.top +
+                            SPACING.sm,
                         paddingBottom:
-                            insets.bottom + 110,
+                            insets.bottom +
+                            110,
                     },
                 ]}
             >
                 {/* Header */}
-                <View style={styles.header}>
+                <View
+                    style={
+                        styles.header
+                    }
+                >
                     <Pressable
-                        onPress={handleCancel}
+                        onPress={
+                            handleCancel
+                        }
                         hitSlop={8}
                         accessibilityRole="button"
-                        accessibilityLabel="Cancel booking"
                     >
-                        <Text style={styles.cancel}>
+                        <Text
+                            style={
+                                styles.cancel
+                            }
+                        >
                             Cancel
                         </Text>
                     </Pressable>
 
-                    <Text style={styles.headerTitle}>
+                    <Text
+                        style={
+                            styles.headerTitle
+                        }
+                    >
                         Booking Summary
                     </Text>
 
                     <View
-                        style={styles.headerSpacer}
+                        style={
+                            styles.headerSpacer
+                        }
                     />
                 </View>
 
-                {/* Booking progress */}
-                <View style={styles.steps}>
-                    <View style={styles.stepItem}>
+                {/* Progress */}
+                <View
+                    style={
+                        styles.steps
+                    }
+                >
+                    <View
+                        style={
+                            styles.stepItem
+                        }
+                    >
                         <View
                             style={
                                 styles.completedCircle
@@ -131,16 +320,30 @@ export default function BookingScreen({
                             </Text>
                         </View>
 
-                        <Text style={styles.stepText}>
+                        <Text
+                            style={
+                                styles.stepText
+                            }
+                        >
                             Tickets
                         </Text>
                     </View>
 
-                    <View style={styles.stepLine} />
+                    <View
+                        style={
+                            styles.stepLine
+                        }
+                    />
 
-                    <View style={styles.stepItem}>
+                    <View
+                        style={
+                            styles.stepItem
+                        }
+                    >
                         <View
-                            style={styles.activeCircle}
+                            style={
+                                styles.activeCircle
+                            }
                         >
                             <Text
                                 style={
@@ -151,85 +354,192 @@ export default function BookingScreen({
                             </Text>
                         </View>
 
-                        <Text style={styles.activeText}>
+                        <Text
+                            style={
+                                styles.activeText
+                            }
+                        >
                             Summary
                         </Text>
                     </View>
 
-                    <View style={styles.stepLine} />
+                    <View
+                        style={
+                            styles.stepLine
+                        }
+                    />
 
-                    <View style={styles.stepItem}>
-                        <View style={styles.circle}>
-                            <Text style={styles.number}>
+                    <View
+                        style={
+                            styles.stepItem
+                        }
+                    >
+                        <View
+                            style={
+                                styles.circle
+                            }
+                        >
+                            <Text
+                                style={
+                                    styles.number
+                                }
+                            >
                                 3
                             </Text>
                         </View>
 
-                        <Text style={styles.stepText}>
+                        <Text
+                            style={
+                                styles.stepText
+                            }
+                        >
                             Payment
                         </Text>
                     </View>
 
-                    <View style={styles.stepLine} />
+                    <View
+                        style={
+                            styles.stepLine
+                        }
+                    />
 
-                    <View style={styles.stepItem}>
-                        <View style={styles.circle}>
-                            <Text style={styles.number}>
+                    <View
+                        style={
+                            styles.stepItem
+                        }
+                    >
+                        <View
+                            style={
+                                styles.circle
+                            }
+                        >
+                            <Text
+                                style={
+                                    styles.number
+                                }
+                            >
                                 4
                             </Text>
                         </View>
 
-                        <Text style={styles.stepText}>
+                        <Text
+                            style={
+                                styles.stepText
+                            }
+                        >
                             Confirmation
                         </Text>
                     </View>
                 </View>
 
-                {/* Page introduction */}
-                <View style={styles.intro}>
-                    <Text style={styles.title}>
+                {/* Introduction */}
+                <View
+                    style={
+                        styles.intro
+                    }
+                >
+                    <Text
+                        style={
+                            styles.title
+                        }
+                    >
                         Review your booking
                     </Text>
 
-                    <Text style={styles.subtitle}>
+                    <Text
+                        style={
+                            styles.subtitle
+                        }
+                    >
                         Check your tickets before
                         continuing to payment.
                     </Text>
                 </View>
 
-                {/* Selected tickets */}
+                {/* Selected event */}
                 <BookingItem
-                    title="Sheffield Music Festival"
-                    imageUrl={require('../../assets/images/festival.jpg')}
-                    date="Sep 20 • 18:00"
-                    location="Sheffield, UK"
-                    ticketType={ticketType}
-                    quantity={quantity}
-                    price={ticketPrice}
-                    onQuantityChange={setQuantity}
+                    title={event.name}
+                    imageUrl={
+                        imageUrl
+                            ? {
+                                  uri: imageUrl,
+                              }
+                            : require('../../assets/images/festival.jpg')
+                    }
+                    date={formatDate(
+                        event.dates
+                            ?.start
+                            ?.localDate,
+                        event.dates
+                            ?.start
+                            ?.localTime,
+                    )}
+                    location={getLocation()}
+                    ticketType={
+                        ticketType
+                    }
+                    quantity={
+                        quantity
+                    }
+                    price={
+                        ticketPrice
+                    }
+                    onQuantityChange={
+                        setQuantity
+                    }
                 />
 
                 {/* Order summary */}
-                <View style={styles.summary}>
-                    <Text style={styles.summaryTitle}>
+                <View
+                    style={
+                        styles.summary
+                    }
+                >
+                    <Text
+                        style={
+                            styles.summaryTitle
+                        }
+                    >
                         Order Summary
                     </Text>
 
-                    {/* Tickets */}
-                    <View style={styles.priceRow}>
-                        <Text style={styles.label}>
-                            {quantity} × {ticketType}
+                    <View
+                        style={
+                            styles.priceRow
+                        }
+                    >
+                        <Text
+                            style={
+                                styles.label
+                            }
+                        >
+                            {quantity} ×{' '}
+                            {ticketType}
                         </Text>
 
-                        <Text style={styles.value}>
-                            £{ticketTotal.toFixed(2)}
+                        <Text
+                            style={
+                                styles.value
+                            }
+                        >
+                            £
+                            {ticketTotal.toFixed(
+                                2,
+                            )}
                         </Text>
                     </View>
 
-                    {/* Service fee */}
-                    <View style={styles.priceRow}>
+                    <View
+                        style={
+                            styles.priceRow
+                        }
+                    >
                         <View>
-                            <Text style={styles.label}>
+                            <Text
+                                style={
+                                    styles.label
+                                }
+                            >
                                 Service fee
                             </Text>
 
@@ -242,41 +552,68 @@ export default function BookingScreen({
                             </Text>
                         </View>
 
-                        <Text style={styles.value}>
-                            £{SERVICE_FEE.toFixed(2)}
+                        <Text
+                            style={
+                                styles.value
+                            }
+                        >
+                            £
+                            {SERVICE_FEE.toFixed(
+                                2,
+                            )}
                         </Text>
                     </View>
 
-                    {/* Divider */}
-                    <View style={styles.divider} />
+                    <View
+                        style={
+                            styles.divider
+                        }
+                    />
 
-                    {/* Total */}
-                    <View style={styles.totalRow}>
-                        <Text style={styles.totalLabel}>
+                    <View
+                        style={
+                            styles.totalRow
+                        }
+                    >
+                        <Text
+                            style={
+                                styles.totalLabel
+                            }
+                        >
                             Total
                         </Text>
 
-                        <Text style={styles.totalValue}>
-                            £{total.toFixed(2)}
+                        <Text
+                            style={
+                                styles.totalValue
+                            }
+                        >
+                            £
+                            {total.toFixed(
+                                2,
+                            )}
                         </Text>
                     </View>
                 </View>
             </ScrollView>
 
-            {/* Bottom action */}
+            {/* Footer */}
             <View
                 style={[
                     styles.footer,
                     {
                         paddingBottom:
-                            insets.bottom + SPACING.sm,
+                            insets.bottom +
+                            SPACING.sm,
                     },
                 ]}
             >
                 <CustomButton
                     title="Continue to Payment"
                     variant="primary"
-                    onPress={handleContinue}
+                    onPress={
+                        handleContinue
+                    }
                 />
             </View>
         </View>
@@ -286,18 +623,56 @@ export default function BookingScreen({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: COLORS.background,
+        backgroundColor:
+            COLORS.background,
     },
 
     content: {
-        paddingHorizontal: SPACING.lg,
+        paddingHorizontal:
+            SPACING.lg,
+    },
+
+    center: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal:
+            SPACING.lg,
+        backgroundColor:
+            COLORS.background,
+    },
+
+    loadingText: {
+        marginTop:
+            SPACING.sm,
+        ...TYPOGRAPHY.regular,
+        fontSize: 13,
+        color: COLORS.textSecondary,
+    },
+
+    errorTitle: {
+        ...TYPOGRAPHY.bold,
+        fontSize: 20,
+        color: COLORS.text,
+        marginBottom:
+            SPACING.sm,
+    },
+
+    errorText: {
+        ...TYPOGRAPHY.regular,
+        fontSize: 13,
+        color: COLORS.textSecondary,
+        textAlign: 'center',
+        marginBottom:
+            SPACING.lg,
     },
 
     header: {
         height: 52,
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent:
+            'space-between',
     },
 
     cancel: {
@@ -319,8 +694,10 @@ const styles = StyleSheet.create({
     steps: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        marginVertical: SPACING.lg,
+        justifyContent:
+            'space-between',
+        marginVertical:
+            SPACING.lg,
     },
 
     stepItem: {
@@ -332,7 +709,8 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
         borderRadius: 12,
-        backgroundColor: COLORS.primary,
+        backgroundColor:
+            COLORS.primary,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -341,7 +719,8 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
         borderRadius: 12,
-        backgroundColor: COLORS.primaryLight,
+        backgroundColor:
+            COLORS.primaryLight,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -350,7 +729,8 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
         borderRadius: 12,
-        backgroundColor: COLORS.card,
+        backgroundColor:
+            COLORS.card,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -388,21 +768,25 @@ const styles = StyleSheet.create({
     stepLine: {
         flex: 1,
         height: 1,
-        backgroundColor: COLORS.border,
+        backgroundColor:
+            COLORS.border,
         marginHorizontal: 4,
         marginBottom: 18,
     },
 
     intro: {
-        marginTop: SPACING.lg,
-        marginBottom: SPACING.lg,
+        marginTop:
+            SPACING.lg,
+        marginBottom:
+            SPACING.lg,
     },
 
     title: {
         ...TYPOGRAPHY.bold,
         fontSize: 18,
         color: COLORS.text,
-        marginBottom: SPACING.sm,
+        marginBottom:
+            SPACING.sm,
     },
 
     subtitle: {
@@ -413,24 +797,30 @@ const styles = StyleSheet.create({
     },
 
     summary: {
-        marginTop: SPACING.lg,
+        marginTop:
+            SPACING.lg,
         padding: SPACING.md,
-        borderRadius: RADIUS.md,
-        backgroundColor: COLORS.card,
+        borderRadius:
+            RADIUS.md,
+        backgroundColor:
+            COLORS.card,
     },
 
     summaryTitle: {
         ...TYPOGRAPHY.semiBold,
         fontSize: 13,
         color: COLORS.text,
-        marginBottom: SPACING.md,
+        marginBottom:
+            SPACING.md,
     },
 
     priceRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: SPACING.sm,
+        justifyContent:
+            'space-between',
+        marginBottom:
+            SPACING.sm,
     },
 
     label: {
@@ -454,14 +844,17 @@ const styles = StyleSheet.create({
 
     divider: {
         height: 1,
-        backgroundColor: COLORS.border,
-        marginVertical: SPACING.sm,
+        backgroundColor:
+            COLORS.border,
+        marginVertical:
+            SPACING.sm,
     },
 
     totalRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent:
+            'space-between',
     },
 
     totalLabel: {
@@ -481,10 +874,14 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        paddingHorizontal: SPACING.lg,
-        paddingTop: SPACING.sm,
-        backgroundColor: COLORS.background,
+        paddingHorizontal:
+            SPACING.lg,
+        paddingTop:
+            SPACING.sm,
+        backgroundColor:
+            COLORS.background,
         borderTopWidth: 1,
-        borderTopColor: COLORS.border,
+        borderTopColor:
+            COLORS.border,
     },
 });

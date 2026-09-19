@@ -1,4 +1,7 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {
+    createBottomTabNavigator,
+} from '@react-navigation/bottom-tabs';
+
 import {
     House,
     Search,
@@ -7,29 +10,45 @@ import {
 } from 'lucide-react-native';
 
 import HomeStack from './HomeStack';
+import SearchStack from './SearchStack';
 
-import SearchScreen from '../screens/SearchScreen';
 import BookingsScreen from '../screens/BookingsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
-import { COLORS, TYPOGRAPHY } from '../constants/theme';
-import { SCREENS } from '../constants/screens';
-import type { MainTabParamList } from './types';
+import {
+    COLORS,
+    TYPOGRAPHY,
+} from '../constants/theme';
 
-const Tab = createBottomTabNavigator<MainTabParamList>();
+import { SCREENS } from '../constants/screens';
+
+import type {
+    MainTabParamList,
+} from './types';
+
+const Tab =
+    createBottomTabNavigator<MainTabParamList>();
 
 export default function MainTabs() {
     return (
         <Tab.Navigator
-            initialRouteName={SCREENS.HOME}
+            initialRouteName={
+                SCREENS.HOME
+            }
             screenOptions={{
                 headerShown: false,
-                tabBarActiveTintColor: COLORS.primary,
-                tabBarInactiveTintColor: COLORS.textSecondary,
+
+                tabBarActiveTintColor:
+                    COLORS.primary,
+
+                tabBarInactiveTintColor:
+                    COLORS.textSecondary,
+
                 tabBarLabelStyle: {
                     ...TYPOGRAPHY.regular,
                     fontSize: 10,
                 },
+
                 tabBarStyle: {
                     height: 64,
                     paddingTop: 8,
@@ -42,7 +61,11 @@ export default function MainTabs() {
                 component={HomeStack}
                 options={{
                     tabBarLabel: 'Home',
-                    tabBarIcon: ({ color, size }) => (
+
+                    tabBarIcon: ({
+                        color,
+                        size,
+                    }) => (
                         <House
                             color={color}
                             size={size}
@@ -53,10 +76,14 @@ export default function MainTabs() {
 
             <Tab.Screen
                 name={SCREENS.SEARCH}
-                component={SearchScreen}
+                component={SearchStack}
                 options={{
                     tabBarLabel: 'Search',
-                    tabBarIcon: ({ color, size }) => (
+
+                    tabBarIcon: ({
+                        color,
+                        size,
+                    }) => (
                         <Search
                             color={color}
                             size={size}
@@ -70,7 +97,11 @@ export default function MainTabs() {
                 component={BookingsScreen}
                 options={{
                     tabBarLabel: 'Bookings',
-                    tabBarIcon: ({ color, size }) => (
+
+                    tabBarIcon: ({
+                        color,
+                        size,
+                    }) => (
                         <Ticket
                             color={color}
                             size={size}
@@ -84,7 +115,11 @@ export default function MainTabs() {
                 component={ProfileScreen}
                 options={{
                     tabBarLabel: 'Profile',
-                    tabBarIcon: ({ color, size }) => (
+
+                    tabBarIcon: ({
+                        color,
+                        size,
+                    }) => (
                         <User
                             color={color}
                             size={size}

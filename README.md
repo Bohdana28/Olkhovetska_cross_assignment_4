@@ -1,222 +1,78 @@
 # Evently
 
-React Native mobile application for discovering events and booking tickets.
+Event discovery and ticket booking mobile application built with React Native.
 
-## Assignment 4 - Navigation
+## Assignment 5
 
-This assignment focuses on implementing a complete navigation structure for the Evently mobile application based on the Figma design.
+For this assignment, the application was integrated with the Ticketmaster Discovery API.
 
-The application uses React Navigation with:
+### API
 
-- Stack Navigator
-- Bottom Tab Navigator
-- Drawer Navigator
+Ticketmaster Discovery API was used to retrieve real event data.
 
-## Navigation Structure
+The application supports:
 
-```text
-Drawer Navigator
-│
-├── Main
-│   │
-│   └── Bottom Tab Navigator
-│       │
-│       ├── Home
-│       │   │
-│       │   └── Home Stack
-│       │       ├── Home
-│       │       ├── Event Details
-│       │       ├── Booking Tickets
-│       │       ├── Booking
-│       │       ├── Payment
-│       │       └── Booking Confirmed
-│       │
-│       ├── Search
-│       ├── Bookings
-│       └── Profile
-│
-├── Help
-└── Contact
-```
+- Event search
+- Event categories
+- Event filtering
+- Date filtering
+- Price filtering
+- Location filtering
+- Sorting
+- Event details
+- Navigation from event list to event details
 
-## Stack Navigation
+### Technologies
 
-The Home Stack is used for the main event and booking flow:
+- React Native
+- TypeScript
+- React Navigation
+- Fetch API
+- Ticketmaster Discovery API
+- FlatList
+- lucide-react-native
 
-Home
- ↓
-Event Details
- ↓
-Booking Tickets
- ↓
-Booking
- ↓
-Payment
- ↓
-Booking Confirmed
+### API integration
 
-Stack navigation allows users to move through the booking process and return to previous screens using back navigation.
+API request logic is separated into:
 
-## Bottom Tab Navigation
+`src/api/api.ts`
 
-The main sections of the application are available through bottom tabs:
+The application uses `fetch()` for GET requests and stores received data in React state using `useState`.
 
-* Home
-* Search
-* Bookings
-* Profile
+### Loading and error handling
 
-## Drawer Navigation
+Loading states are displayed using `ActivityIndicator`.
 
-The Drawer provides access to secondary sections:
+API errors are handled with `try/catch` and displayed to the user.
 
-* Main
-* Help
-* Contact
+### Screenshots
 
-The Drawer can be opened using a swipe gesture from the left edge of the screen.
-
-## Navigation Parameters
-
-Navigation parameters are used to pass event and booking information between screens.
-
-For example, the event ID is passed from Event Details to Booking Tickets:
-```
-navigation.navigate('BookingTickets', {
-    eventId,
-});
-```
-The destination screen receives the parameter using route.params:
-```
-const { eventId } = route.params;
-```
-
-Booking screens also receive:
-
-* event ID
-* ticket quantity
-* ticket type
-* ticket price
-* payment method
-
-This allows booking information to be preserved throughout the booking flow.
-
-## Error Handling
-
-Screens that require navigation parameters include basic validation.
-
-If a required parameter is missing, the application displays an error state instead of trying to render unavailable data.
-
-## Search
-
-The Search screen allows users to search for events.
-
-Search results are matched by:
-
-* event title
-* location
-* category
-
-Example: music
-
-returns: Sheffield Music Festival
-
-## Booking Flow
-
-The complete ticket booking flow is implemented:
-
-Event Details
- ↓
-Booking Tickets
- ↓
-Booking
- ↓
-Payment
- ↓
-Booking Confirmed
-
-The selected event and booking information are passed between screens using React Navigation parameters.
-
-## Reusable Components
-
-The application uses reusable React Native components created in the previous assignment:
-
-* CustomButton
-* EventCard
-* SearchBar
-* CategoryList
-* BookingItem
-* EventInfo
-* TabBar
-
-## Technologies
-
-* React Native
-* TypeScript
-* React Navigation
-* React Navigation Native Stack
-* React Navigation Bottom Tabs
-* React Navigation Drawer
-* React Native Gesture Handler
-* React Native Reanimated
-* React Native Safe Area Context
-* lucide-react-native
-* StyleSheet
-* Flexbox
-
-## Responsive Design
-
-The application was tested on Android and iOS.
-
-Responsive layouts use React Native dimensions and safe area handling.
-
-Platform-specific behavior is handled using React Native APIs such as:
-
-- Platform.select()
-- useWindowDimensions()
-
-## Screenshots
-
-### Home
+#### Home
 
 ![Home](./screenshots/home.png)
 
-### Event Details
+#### Search
 
-![Event Details](./screenshots/Event_Details.png)
+![Search](./screenshots/search.png)
 
-### Booking
+#### Search Results
 
-![Booking](./screenshots/booking.png)
-![Booking](./screenshots/booking_summary.png)
-![Booking](./screenshots/payment.png)
-![Booking](./screenshots/booking_confirmed.png)
+![Search Results](./screenshots/search-results.png)
 
-### Drawer
+#### Filters
 
-![Drawer](./screenshots/Drawer.png)
+![Filters](./screenshots/filter.png)
 
-## Navigation Demo
 
-The navigation flow was recorded on Android.
+#### Filter Results
 
-The video demonstrates:
+![Filter Results](./screenshots/filter-result.png)
 
-* Bottom Tab Navigation
-* Drawer Navigation
-* Stack Navigation
-* Search
-* Search results
-* Navigation parameters
-* Event Details
-* Ticket selection
-* Booking
-* Payment
-* Booking confirmation
-* Back navigation
+#### Event Details
 
-[Watch Navigation Demo](https://drive.google.com/file/d/1eQx0YTy2ZX8m5GGz1X-wYrOxmPNOd5qW/view?usp=sharing)
+![Event Details](./screenshots/event-details.png)
 
-## Author
+#### Live Demo
 
-Bohdana Olkhovetska
+![Live Demo](https://drive.google.com/file/d/1fWToOx7NRm3fmVsPRpknQGfB8TGuewCB/view?usp=sharing)
