@@ -2,77 +2,125 @@
 
 Event discovery and ticket booking mobile application built with React Native.
 
-## Assignment 5
+## Cross Assignment 6
 
-For this assignment, the application was integrated with the Ticketmaster Discovery API.
+This assignment focuses on global state management in the Evently React Native application.
 
-### API
+The project uses:
 
-Ticketmaster Discovery API was used to retrieve real event data.
+- Context API for global theme management
 
-The application supports:
+- Redux Toolkit for booking management
 
-- Event search
-- Event categories
-- Event filtering
-- Date filtering
-- Price filtering
-- Location filtering
-- Sorting
-- Event details
-- Navigation from event list to event details
+- React Navigation theme integration
 
-### Technologies
+- TypeScript for type safety
 
-- React Native
-- TypeScript
-- React Navigation
-- Fetch API
-- Ticketmaster Discovery API
-- FlatList
-- lucide-react-native
+## Context API
 
-### API integration
+The Context API is used to manage the global application theme.
 
-API request logic is separated into:
+### Theme features
 
-`src/api/api.ts`
+- Light and Dark themes
+- Global theme state
+- Theme toggle from the Profile screen
+- Theme colors are centralized in `theme.ts`
+- React Navigation theme changes together with the application theme
 
-The application uses `fetch()` for GET requests and stores received data in React state using `useState`.
+### Implementation
 
-### Loading and error handling
+The main files are:
 
-Loading states are displayed using `ActivityIndicator`.
+- `src/context/ThemeContext.tsx`
+- `src/constants/theme.ts`
+- `src/screens/ProfileScreen.tsx`
+- `src/screens/HomeScreen.tsx`
+- `src/navigation/RootNavigator.tsx`
 
-API errors are handled with `try/catch` and displayed to the user.
+## Screenshots
 
-### Screenshots
+### Context API - Light Theme
 
-#### Home
+![Profile Light Theme](./screenshots/profile-light-mode.png)
 
-![Home](./screenshots/home.png)
+### Context API - Dark Theme
 
-#### Search
+![Profile Dark Theme](./screenshots/profile-dark.png)
 
-![Search](./screenshots/search.png)
+### Dark Theme Navigation
 
-#### Search Results
+![Dark Navigation](./screenshots/drawer-dark.png)
 
-![Search Results](./screenshots/search-results.png)
+### Home Dark Theme
 
-#### Filters
-
-![Filters](./screenshots/filter.png)
+![Home Dark](./screenshots/home-dark.png)
 
 
-#### Filter Results
 
-![Filter Results](./screenshots/filter-result.png)
+## Redux Toolkit
 
-#### Event Details
+Redux Toolkit is used to manage global booking state.
 
-![Event Details](./screenshots/event-details.png)
+### Booking features
 
-#### Live Demo
+- Add a booking after successful payment
+- Store event information
+- Store ticket type and quantity
+- Update ticket quantity
+- Remove/cancel a booking
+- Display bookings on the My Bookings screen
+- Calculate the booking total including the service fee
 
-![Live Demo](https://drive.google.com/file/d/1fWToOx7NRm3fmVsPRpknQGfB8TGuewCB/view?usp=sharing)
+### Implementation
+
+The main Redux files are:
+
+- `src/redux/store.ts`
+- `src/redux/bookingsSlice.ts`
+- `src/screens/BookingConfirmedScreen.tsx`
+- `src/screens/BookingsScreen.tsx`
+- `src/components/BookingItem.tsx`
+
+
+## Screenshots
+
+### Booking Confirmation
+
+![Booking Confirmation](./screenshots/confirmed.png)
+
+### My Bookings
+
+![My Bookings](./screenshots/mybookings.png)
+
+### Booking Cancellation
+
+![Booking Cancellation](./screenshots/%20cancelled-booking.png)
+
+
+## State Management Architecture
+
+### Context API
+
+Theme state:
+
+`ThemeProvider`
+→ `useTheme()`
+→ `ProfileScreen`
+→ `HomeScreen`
+→ `RootNavigator`
+
+### Redux Toolkit
+
+Booking state:
+
+`Provider`
+→ `store`
+→ `bookingsSlice`
+→ `BookingConfirmedScreen`
+→ `BookingsScreen`
+→ `BookingItem`
+
+### Live Demo
+
+![LiveDemo](https://drive.google.com/file/d/1tfRE94KbJltq-BDQBSQwBBsIF8xUCUpM/view?usp=sharing)

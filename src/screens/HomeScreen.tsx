@@ -18,10 +18,11 @@ import CategoryList from '../components/CategoryList';
 import EventCard from '../components/EventCard';
 
 import {
-    COLORS,
     SPACING,
     TYPOGRAPHY,
 } from '../constants/theme';
+
+import { useTheme } from '../context/ThemeContext';
 
 import {
     fetchCategories,
@@ -36,6 +37,8 @@ export default function HomeScreen({
     navigation,
 }: Props) {
     const insets = useSafeAreaInsets();
+    const { colors } = useTheme();
+    const styles = createStyles(colors);
 
     const [events, setEvents] = useState<
         TicketmasterEvent[]
@@ -150,9 +153,9 @@ export default function HomeScreen({
              * current API result has no matching events.
              */
             const localEvents = events.filter(
-                (event) =>
+                event =>
                     event.classifications?.some(
-                        (classification) =>
+                        classification =>
                             classification.segment
                                 ?.name ===
                             category,
@@ -166,9 +169,9 @@ export default function HomeScreen({
              * fall back to the events already loaded.
              */
             const localEvents = events.filter(
-                (event) =>
+                event =>
                     event.classifications?.some(
-                        (classification) =>
+                        classification =>
                             classification.segment
                                 ?.name ===
                             category,
@@ -353,9 +356,7 @@ export default function HomeScreen({
                     >
                         <ActivityIndicator
                             size="small"
-                            color={
-                                COLORS.primary
-                            }
+                            color={colors.primary}
                         />
 
                         <Text
@@ -390,7 +391,7 @@ export default function HomeScreen({
                         renderItem={
                             renderEventItem
                         }
-                        keyExtractor={(item) =>
+                        keyExtractor={item =>
                             item.id
                         }
                         showsHorizontalScrollIndicator={
@@ -426,7 +427,7 @@ export default function HomeScreen({
             >
                 <ActivityIndicator
                     size="large"
-                    color={COLORS.primary}
+                    color={colors.primary}
                 />
 
                 <Text style={styles.statusText}>
@@ -489,123 +490,135 @@ export default function HomeScreen({
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor:
-            COLORS.background,
-    },
+const createStyles = (colors: {
+    primary: string;
+    primaryLight: string;
+    primaryMedium: string;
+    text: string;
+    textSecondary: string;
+    background: string;
+    border: string;
+    card: string;
+    success: string;
+    error: string;
+}) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor:
+                colors.background,
+        },
 
-    content: {
-        padding: SPACING.lg,
-    },
+        content: {
+            padding: SPACING.lg,
+        },
 
-    headerContent: {
-        gap: 0,
-    },
+        headerContent: {
+            gap: 0,
+        },
 
-    header: {
-        marginBottom: SPACING.md,
-    },
+        header: {
+            marginBottom: SPACING.md,
+        },
 
-    greeting: {
-        ...TYPOGRAPHY.regular,
-        fontSize: 12,
-        color: COLORS.textSecondary,
-        marginBottom: 4,
-    },
+        greeting: {
+            ...TYPOGRAPHY.regular,
+            fontSize: 12,
+            color: colors.textSecondary,
+            marginBottom: 4,
+        },
 
-    title: {
-        ...TYPOGRAPHY.bold,
-        fontSize: 22,
-        color: COLORS.text,
-    },
+        title: {
+            ...TYPOGRAPHY.bold,
+            fontSize: 22,
+            color: colors.text,
+        },
 
-    searchContainer: {
-        marginBottom: SPACING.md,
-    },
+        searchContainer: {
+            marginBottom: SPACING.md,
+        },
 
-    categoryContainer: {
-        marginBottom: SPACING.lg,
-    },
+        categoryContainer: {
+            marginBottom: SPACING.lg,
+        },
 
-    sectionHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: SPACING.sm,
-    },
+        sectionHeader: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: SPACING.sm,
+        },
 
-    sectionTitle: {
-        ...TYPOGRAPHY.semiBold,
-        fontSize: 14,
-        color: COLORS.text,
-    },
+        sectionTitle: {
+            ...TYPOGRAPHY.semiBold,
+            fontSize: 14,
+            color: colors.text,
+        },
 
-    seeMore: {
-        ...TYPOGRAPHY.medium,
-        fontSize: 10,
-        color: COLORS.primary,
-    },
+        seeMore: {
+            ...TYPOGRAPHY.medium,
+            fontSize: 10,
+            color: colors.primary,
+        },
 
-    horizontalList: {
-        paddingRight: SPACING.lg,
-    },
+        horizontalList: {
+            paddingRight: SPACING.lg,
+        },
 
-    eventsLoading: {
-        height: 100,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
+        eventsLoading: {
+            height: 100,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
 
-    loadingText: {
-        marginTop: SPACING.sm,
-        ...TYPOGRAPHY.regular,
-        fontSize: 13,
-        color: COLORS.textSecondary,
-    },
+        loadingText: {
+            marginTop: SPACING.sm,
+            ...TYPOGRAPHY.regular,
+            fontSize: 13,
+            color: colors.textSecondary,
+        },
 
-    emptyText: {
-        ...TYPOGRAPHY.regular,
-        fontSize: 14,
-        color: COLORS.textSecondary,
-        paddingVertical: SPACING.lg,
-    },
+        emptyText: {
+            ...TYPOGRAPHY.regular,
+            fontSize: 14,
+            color: colors.textSecondary,
+            paddingVertical: SPACING.lg,
+        },
 
-    inlineError: {
-        ...TYPOGRAPHY.regular,
-        fontSize: 13,
-        color: COLORS.error,
-        paddingVertical: SPACING.lg,
-    },
+        inlineError: {
+            ...TYPOGRAPHY.regular,
+            fontSize: 13,
+            color: colors.error,
+            paddingVertical: SPACING.lg,
+        },
 
-    center: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: SPACING.lg,
-        backgroundColor:
-            COLORS.background,
-    },
+        center: {
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: SPACING.lg,
+            backgroundColor:
+                colors.background,
+        },
 
-    statusText: {
-        marginTop: SPACING.sm,
-        ...TYPOGRAPHY.regular,
-        fontSize: 14,
-        color: COLORS.textSecondary,
-    },
+        statusText: {
+            marginTop: SPACING.sm,
+            ...TYPOGRAPHY.regular,
+            fontSize: 14,
+            color: colors.textSecondary,
+        },
 
-    errorTitle: {
-        ...TYPOGRAPHY.bold,
-        fontSize: 18,
-        color: COLORS.text,
-        marginBottom: SPACING.sm,
-    },
+        errorTitle: {
+            ...TYPOGRAPHY.bold,
+            fontSize: 18,
+            color: colors.text,
+            marginBottom: SPACING.sm,
+        },
 
-    errorText: {
-        ...TYPOGRAPHY.regular,
-        fontSize: 14,
-        color: COLORS.error,
-        textAlign: 'center',
-    },
-});
+        errorText: {
+            ...TYPOGRAPHY.regular,
+            fontSize: 14,
+            color: colors.error,
+            textAlign: 'center',
+        },
+    });

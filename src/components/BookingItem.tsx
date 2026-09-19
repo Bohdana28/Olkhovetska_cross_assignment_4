@@ -8,7 +8,10 @@ import {
     useWindowDimensions,
 } from 'react-native';
 
-import { Minus, Plus } from 'lucide-react-native';
+import {
+    Minus,
+    Plus,
+} from 'lucide-react-native';
 
 import {
     COLORS,
@@ -46,9 +49,7 @@ export default function BookingItem({
     );
 
     const decreaseQuantity = () => {
-        if (quantity > 1) {
-            onQuantityChange(quantity - 1);
-        }
+        onQuantityChange(quantity - 1);
     };
 
     const increaseQuantity = () => {
@@ -96,28 +97,60 @@ export default function BookingItem({
                 <View style={styles.bottomRow}>
                     <View style={styles.quantity}>
                         <Pressable
-                            accessibilityLabel="Decrease ticket quantity"
-                            style={styles.quantityButton}
+                            accessibilityRole="button"
+                            accessibilityLabel={
+                                quantity > 1
+                                    ? 'Decrease ticket quantity'
+                                    : 'Cancel booking'
+                            }
+                            style={[
+                                styles.quantityButton,
+                                quantity === 1 &&
+                                    styles.cancelButton,
+                            ]}
                             onPress={decreaseQuantity}
                         >
-                            <Minus
-                                size={12}
-                                color={COLORS.primary}
-                            />
+                            {quantity === 1 ? (
+                                <Text
+                                    style={
+                                        styles.cancelText
+                                    }
+                                >
+                                    Cancel
+                                </Text>
+                            ) : (
+                                <Minus
+                                    size={12}
+                                    color={
+                                        COLORS.primary
+                                    }
+                                />
+                            )}
                         </Pressable>
 
-                        <Text style={styles.quantityText}>
+                        <Text
+                            style={
+                                styles.quantityText
+                            }
+                        >
                             {quantity}
                         </Text>
 
                         <Pressable
+                            accessibilityRole="button"
                             accessibilityLabel="Increase ticket quantity"
-                            style={styles.quantityButton}
-                            onPress={increaseQuantity}
+                            style={
+                                styles.quantityButton
+                            }
+                            onPress={
+                                increaseQuantity
+                            }
                         >
                             <Plus
                                 size={12}
-                                color={COLORS.primary}
+                                color={
+                                    COLORS.primary
+                                }
                             />
                         </Pressable>
                     </View>
@@ -204,6 +237,17 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.primaryLight,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+
+    cancelButton: {
+        width: 58,
+        borderRadius: 12,
+    },
+
+    cancelText: {
+        ...TYPOGRAPHY.medium,
+        fontSize: 9,
+        color: COLORS.primary,
     },
 
     quantityText: {

@@ -61,17 +61,17 @@ export default function MainTabs() {
                 component={HomeStack}
                 options={{
                     tabBarLabel: 'Home',
-
-                    tabBarIcon: ({
-                        color,
-                        size,
-                    }) => (
-                        <House
-                            color={color}
-                            size={size}
-                        />
+                    tabBarIcon: ({ color, size }) => (
+                        <House color={color} size={size} />
                     ),
                 }}
+                listeners={({ navigation }) => ({
+                    tabPress: () => {
+                        navigation.navigate(SCREENS.HOME, {
+                            screen: SCREENS.HOME_SCREEN,
+                        });
+                    },
+                })}
             />
 
             <Tab.Screen

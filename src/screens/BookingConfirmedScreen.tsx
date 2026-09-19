@@ -19,7 +19,21 @@ import {
     useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import type { HomeStackScreenProps } from '../navigation/types';
+import {
+    useDispatch,
+} from 'react-redux';
+
+import type {
+    HomeStackScreenProps,
+} from '../navigation/types';
+
+import type {
+    AppDispatch,
+} from '../redux/store';
+
+import {
+    addBooking,
+} from '../redux/bookingsSlice';
 
 import CustomButton from '../components/CustomButton';
 
@@ -27,6 +41,7 @@ import {
     COLORS,
     RADIUS,
     SPACING,
+    SERVICE_FEE,
     TYPOGRAPHY,
 } from '../constants/theme';
 
@@ -38,7 +53,6 @@ import {
 type Props =
     HomeStackScreenProps<'BookingConfirmed'>;
 
-const SERVICE_FEE = 2.5;
 
 export default function BookingConfirmedScreen({
     navigation,
@@ -46,6 +60,9 @@ export default function BookingConfirmedScreen({
 }: Props) {
     const insets =
         useSafeAreaInsets();
+
+    const dispatch =
+        useDispatch<AppDispatch>();
 
     const {
         eventId,
@@ -68,8 +85,7 @@ export default function BookingConfirmedScreen({
         useState<string | null>(null);
 
     const total =
-        quantity *
-            ticketPrice +
+        quantity * ticketPrice +
         SERVICE_FEE;
 
     useEffect(() => {
@@ -84,6 +100,28 @@ export default function BookingConfirmedScreen({
                     );
 
                 setEvent(data);
+
+                dispatch(
+                    addBooking({
+                        id: eventId,
+                        name: data.name,
+                        image:
+                            data.images?.[0]?.url,
+                        date:
+                            data.dates?.start
+                                ?.localDate,
+                        time:
+                            data.dates?.start
+                                ?.localTime,
+                        venue:
+                            data._embedded
+                                ?.venues?.[0]
+                                ?.name,
+                        ticketType,
+                        quantity,
+                        ticketPrice,
+                    }),
+                );
             } catch (err) {
                 setError(
                     err instanceof Error
@@ -96,7 +134,13 @@ export default function BookingConfirmedScreen({
         };
 
         loadEvent();
-    }, [eventId]);
+    }, [
+        eventId,
+        ticketType,
+        quantity,
+        ticketPrice,
+        dispatch,
+    ]);
 
     const formatTime = (
         time?: string,
@@ -236,7 +280,6 @@ export default function BookingConfirmedScreen({
                     styles.content
                 }
             >
-                {/* Header */}
                 <View
                     style={
                         styles.header
@@ -251,7 +294,6 @@ export default function BookingConfirmedScreen({
                     </Text>
                 </View>
 
-                {/* Success */}
                 <View
                     style={
                         styles.success
@@ -288,7 +330,6 @@ export default function BookingConfirmedScreen({
                     </Text>
                 </View>
 
-                {/* Ticket */}
                 <View
                     style={
                         styles.ticket
@@ -418,7 +459,6 @@ export default function BookingConfirmedScreen({
                 </Text>
             </View>
 
-            {/* Footer */}
             <View
                 style={
                     styles.footer
@@ -427,9 +467,13 @@ export default function BookingConfirmedScreen({
                 <CustomButton
                     title="View ticket"
                     variant="primary"
-                    onPress={() =>
-                        navigation.popToTop()
-                    }
+                    onPress={() => {
+                        navigation.popToTop();
+
+                        navigation
+                            .getParent()
+                            ?.navigate('Bookings');
+                    }}
                 />
             </View>
         </View>
