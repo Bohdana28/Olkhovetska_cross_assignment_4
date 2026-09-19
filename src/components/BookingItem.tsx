@@ -5,91 +5,17 @@ import {
     ImageSourcePropType,
     StyleSheet,
     Pressable,
-} from "react-native";
-import { Minus, Plus } from "lucide-react-native";
-import { COLORS, RADIUS, TYPOGRAPHY } from "../constants/theme";
+    useWindowDimensions,
+} from 'react-native';
 
-const styles = StyleSheet.create({
-    container: {
-        flexDirection: "row",
-        alignItems: "center",
-        width: 327,
-        height: 171,
-        padding: 8,
-        borderRadius: RADIUS.md,
-        backgroundColor: COLORS.background,
-    },
+import { Minus, Plus } from 'lucide-react-native';
 
-    image: {
-        width: 90,
-        height: 100,
-        borderRadius: RADIUS.md,
-    },
-
-    content: {
-        flex: 1,
-        height: "100%",
-        marginLeft: 10,
-        justifyContent: "center",
-    },
-
-    title: {
-        ...TYPOGRAPHY.semiBold,
-        fontSize: 12,
-        color: COLORS.text,
-        marginBottom: 2,
-    },
-
-    info: {
-        ...TYPOGRAPHY.regular,
-        fontSize: 12,
-        lineHeight: 16,
-        letterSpacing: 0.12,
-        color: COLORS.textSecondary,
-    },
-
-    ticketType: {
-        ...TYPOGRAPHY.regular,
-        fontSize: 12,
-        lineHeight: 16,
-        color: COLORS.textSecondary,
-        marginTop: 10,
-    },
-
-    bottomRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginTop: 4,
-    },
-
-    quantity: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 10,
-    },
-
-    quantityButton: {
-        width: 24,
-        height: 24,
-        borderRadius: 26,
-        backgroundColor: COLORS.primaryLight,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-
-    quantityText: {
-        ...TYPOGRAPHY.regular,
-        fontSize: 12,
-        color: COLORS.text,
-    },
-
-    price: {
-        ...TYPOGRAPHY.semiBold,
-        fontSize: 12,
-        color: COLORS.text,
-    },
-});
+import {
+    COLORS,
+    RADIUS,
+    SPACING,
+    TYPOGRAPHY,
+} from '../constants/theme';
 
 interface BookingItemProps {
     title: string;
@@ -112,43 +38,185 @@ export default function BookingItem({
     price,
     onQuantityChange,
 }: BookingItemProps) {
+    const { width } = useWindowDimensions();
+
+    const containerWidth = Math.min(
+        327,
+        width - SPACING.lg * 2,
+    );
+
+    const decreaseQuantity = () => {
+        if (quantity > 1) {
+            onQuantityChange(quantity - 1);
+        }
+    };
+
+    const increaseQuantity = () => {
+        onQuantityChange(quantity + 1);
+    };
+
     return (
-        <View style={styles.container}>
-            <Image source={imageUrl} style={styles.image} />
+        <View
+            style={[
+                styles.container,
+                {
+                    width: containerWidth,
+                },
+            ]}
+        >
+            <Image
+                source={imageUrl}
+                style={styles.image}
+            />
 
             <View style={styles.content}>
-                <Text style={styles.title}>{title}</Text>
-                <Text style={styles.info}>{date}</Text>
-                <Text style={styles.info}>{location}</Text>
+                <Text
+                    style={styles.title}
+                    numberOfLines={1}
+                >
+                    {title}
+                </Text>
 
-                <Text style={styles.ticketType}>{ticketType}</Text>
+                <Text style={styles.info}>
+                    {date}
+                </Text>
+
+                <Text style={styles.info}>
+                    {location}
+                </Text>
+
+                <Text style={styles.ticketLabel}>
+                    Ticket
+                </Text>
+
+                <Text style={styles.ticketType}>
+                    {ticketType}
+                </Text>
 
                 <View style={styles.bottomRow}>
                     <View style={styles.quantity}>
                         <Pressable
+                            accessibilityLabel="Decrease ticket quantity"
                             style={styles.quantityButton}
-                            onPress={() =>
-                                onQuantityChange(Math.max(1, quantity - 1))
-                            }
+                            onPress={decreaseQuantity}
                         >
-                            <Minus size={12} color={COLORS.primary} />
+                            <Minus
+                                size={12}
+                                color={COLORS.primary}
+                            />
                         </Pressable>
 
-                        <Text style={styles.quantityText}>{quantity}</Text>
+                        <Text style={styles.quantityText}>
+                            {quantity}
+                        </Text>
 
                         <Pressable
+                            accessibilityLabel="Increase ticket quantity"
                             style={styles.quantityButton}
-                            onPress={() =>
-                                onQuantityChange(quantity + 1)
-                            }
+                            onPress={increaseQuantity}
                         >
-                            <Plus size={12} color={COLORS.primary} />
+                            <Plus
+                                size={12}
+                                color={COLORS.primary}
+                            />
                         </Pressable>
                     </View>
 
-                    <Text style={styles.price}>£{price}</Text>
+                    <Text style={styles.price}>
+                        £{price}
+                    </Text>
                 </View>
             </View>
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        height: 171,
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: SPACING.sm,
+        borderRadius: RADIUS.md,
+        backgroundColor: COLORS.background,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+    },
+
+    image: {
+        width: 90,
+        height: 100,
+        borderRadius: RADIUS.md,
+    },
+
+    content: {
+        flex: 1,
+        height: '100%',
+        marginLeft: SPACING.sm,
+        justifyContent: 'center',
+    },
+
+    title: {
+        ...TYPOGRAPHY.semiBold,
+        fontSize: 12,
+        color: COLORS.text,
+        marginBottom: 2,
+    },
+
+    info: {
+        ...TYPOGRAPHY.regular,
+        fontSize: 10,
+        lineHeight: 14,
+        color: COLORS.textSecondary,
+    },
+
+    ticketLabel: {
+        ...TYPOGRAPHY.regular,
+        fontSize: 10,
+        color: COLORS.textSecondary,
+        marginTop: 8,
+    },
+
+    ticketType: {
+        ...TYPOGRAPHY.regular,
+        fontSize: 10,
+        lineHeight: 14,
+        color: COLORS.textSecondary,
+    },
+
+    bottomRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: 6,
+    },
+
+    quantity: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+
+    quantityButton: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: COLORS.primaryLight,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+
+    quantityText: {
+        ...TYPOGRAPHY.regular,
+        minWidth: 12,
+        fontSize: 12,
+        color: COLORS.text,
+        textAlign: 'center',
+    },
+
+    price: {
+        ...TYPOGRAPHY.semiBold,
+        fontSize: 12,
+        color: COLORS.text,
+    },
+});

@@ -1,26 +1,117 @@
 import {
     Image,
-    Text,
-    View,
     ImageSourcePropType,
     StyleSheet,
+    Text,
     useWindowDimensions,
-} from "react-native";
-import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from "../constants/theme";
-import CustomButton from "./CustomButton";
+    View,
+} from 'react-native';
+
+import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../constants/theme';
+import CustomButton from './CustomButton';
+
+interface EventCardProps {
+    title: string;
+    imageUrl: ImageSourcePropType;
+    date: string;
+    location: string;
+    onPress: () => void;
+}
+
+export default function EventCard({
+    title,
+    imageUrl,
+    date,
+    location,
+    onPress,
+}: EventCardProps) {
+    const { width } = useWindowDimensions();
+
+    const cardWidth = Math.min(
+        250,
+        width - SPACING.lg * 2,
+    );
+
+    return (
+        <View
+            style={[
+                styles.card,
+                {
+                    width: cardWidth,
+                },
+            ]}
+        >
+            <Image
+                source={imageUrl}
+                style={[
+                    styles.imageCard,
+                    {
+                        width: cardWidth,
+                    },
+                ]}
+            />
+
+            <Text style={styles.date}>
+                {date}
+            </Text>
+
+            <View style={styles.content}>
+                <Text style={styles.title}>
+                    {title}
+                </Text>
+
+                <Text style={styles.location}>
+                    {location}
+                </Text>
+
+                <CustomButton
+                    title="View details"
+                    variant="secondary"
+                    onPress={onPress}
+                    style={{
+                        ...styles.cardButton,
+                        width:
+                            cardWidth -
+                            SPACING.md * 2,
+                    }}
+                />
+            </View>
+        </View>
+    );
+}
 
 const styles = StyleSheet.create({
     card: {
-        position: "relative",
+        position: 'relative',
         height: 245,
         borderRadius: RADIUS.md,
         backgroundColor: COLORS.card,
+        overflow: 'hidden',
     },
 
     imageCard: {
         height: 120,
-        borderTopLeftRadius: RADIUS.md,
-        borderTopRightRadius: RADIUS.md,
+    },
+
+    date: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        width: 61,
+        height: 24,
+        paddingVertical: 6,
+        borderRadius: RADIUS.sm,
+        backgroundColor: COLORS.primary,
+        color: COLORS.background,
+        ...TYPOGRAPHY.semiBold,
+        fontSize: 10,
+        letterSpacing: 0.5,
+        textAlign: 'center',
+        textTransform: 'uppercase',
+    },
+
+    content: {
+        padding: SPACING.md,
     },
 
     title: {
@@ -38,73 +129,8 @@ const styles = StyleSheet.create({
         color: COLORS.textSecondary,
     },
 
-    date: {
-        position: "absolute",
-        top: 10,
-        right: 10,
-        borderRadius: RADIUS.sm,
-        backgroundColor: COLORS.primary,
-        color: COLORS.background,
-        width: 61,
-        height: 24,
-        ...TYPOGRAPHY.semiBold,
-        fontSize: 10,
-        letterSpacing: 0.5,
-        textAlign: "center",
-        textTransform: "uppercase",
-        paddingVertical: 6,
-    },
-
     cardButton: {
         height: 40,
         marginTop: SPACING.md,
     },
-
-    content: {
-        padding: SPACING.md,
-    },
 });
-
-interface EventCardProps {
-    title: string;
-    imageUrl: ImageSourcePropType;
-    date: string;
-    location: string;
-}
-
-export default function EventCard({
-    title,
-    imageUrl,
-    date,
-    location,
-}: EventCardProps) {
-    const { width } = useWindowDimensions();
-
-    const cardWidth = Math.min(250, width - SPACING.lg * 2);
-
-    return (
-        <View style={[styles.card, { width: cardWidth }]}>
-            <Image
-                style={[styles.imageCard, { width: cardWidth }]}
-                source={imageUrl}
-            />
-
-            <Text style={styles.date}>{date}</Text>
-
-            <View style={styles.content}>
-                <Text style={styles.title}>{title}</Text>
-                <Text style={styles.location}>{location}</Text>
-
-                <CustomButton
-                    style={{
-                        ...styles.cardButton,
-                        width: cardWidth - SPACING.md * 2,
-                    }}
-                    title="View event"
-                    variant="secondary"
-                    onPress={() => alert("Secondary")}
-                />
-            </View>
-        </View>
-    );
-}

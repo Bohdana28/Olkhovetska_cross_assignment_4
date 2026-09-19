@@ -1,61 +1,64 @@
+import { StyleSheet, TextInput, View } from 'react-native';
+import { Search } from 'lucide-react-native';
 import {
-    Platform,
-    StyleSheet,
-    TextInput,
-    View,
-} from "react-native";
-import { COLORS, RADIUS, TYPOGRAPHY } from "../constants/theme";
-import { Search } from "lucide-react-native";
-
-const styles = StyleSheet.create({
-    container: {
-        flexDirection: "row",
-        alignItems: "center",
-        width: 343,
-        height: 44,
-        borderRadius: RADIUS.lg,
-        backgroundColor: COLORS.card,
-        paddingHorizontal: 16,
-        gap: 16,
-    },
-
-    input: {
-        ...TYPOGRAPHY.regular,
-        fontSize: 14,
-        flex: 1,
-        padding: 0,
-
-        ...Platform.select({
-            ios: {
-                paddingTop: 1,
-            },
-            android: {
-                textAlignVertical: "center",
-            },
-        }),
-    },
-});
+    COLORS,
+    RADIUS,
+    SPACING,
+    TYPOGRAPHY,
+} from '../constants/theme';
 
 interface SearchBarProps {
     value: string;
     onChangeText: (text: string) => void;
+    placeholder?: string;
 }
 
 export default function SearchBar({
     value,
     onChangeText,
+    placeholder = 'Search events',
 }: SearchBarProps) {
     return (
         <View style={styles.container}>
-            <Search />
+            <Search
+                size={18}
+                color={COLORS.textSecondary}
+            />
 
             <TextInput
-                style={styles.input}
                 value={value}
                 onChangeText={onChangeText}
-                placeholder="Search..."
+                placeholder={placeholder}
                 placeholderTextColor={COLORS.textSecondary}
+                style={styles.input}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="default"
+                textContentType="none"
+                returnKeyType="search"
             />
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        height: 48,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: SPACING.md,
+        borderRadius: RADIUS.md,
+        backgroundColor: COLORS.card,
+        borderWidth: 1,
+        borderColor: COLORS.border,
+    },
+
+    input: {
+        flex: 1,
+        marginLeft: SPACING.sm,
+        paddingVertical: 0,
+        ...TYPOGRAPHY.regular,
+        fontSize: 12,
+        color: COLORS.text,
+    },
+});
