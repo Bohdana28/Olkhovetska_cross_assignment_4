@@ -215,7 +215,7 @@ The video demonstrates:
 * Booking confirmation
 * Back navigation
 
-[Watch Navigation Demo](./screenshots/videos/nav_demo.mov)
+[Watch Navigation Demo](https://drive.google.com/file/d/1eQx0YTy2ZX8m5GGz1X-wYrOxmPNOd5qW/view?usp=sharing)
 
 ## Author
 
