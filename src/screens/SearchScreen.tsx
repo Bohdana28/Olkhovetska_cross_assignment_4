@@ -11,7 +11,8 @@ import {
     useState,
 } from 'react';
 
-import { Clock3, Search, } from 'lucide-react-native';
+import Clock3 from 'lucide-react-native/icons/clock-3';
+import Search from 'lucide-react-native/icons/search';
 
 import {
     useSafeAreaInsets,

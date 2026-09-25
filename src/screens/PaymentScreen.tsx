@@ -9,7 +9,7 @@ import {
     View,
 } from 'react-native';
 
-import { Check } from 'lucide-react-native';
+import Check from 'lucide-react-native/icons/check';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 

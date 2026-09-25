@@ -1,126 +1,145 @@
 # Evently
 
-Event discovery and ticket booking mobile application built with React Native.
+Evently is a React Native mobile application for discovering events and booking tickets.
 
-## Cross Assignment 6
+The project was developed as part of the Cross-Platform Mobile Development course.
 
-This assignment focuses on global state management in the Evently React Native application.
+## Assignment 7: Performance Optimization
 
-The project uses:
+This assignment focuses on improving application performance through:
 
-- Context API for global theme management
+- UI animation
+- reducing unnecessary component re-renders
+- dependency optimization
+- bundle size analysis
 
-- Redux Toolkit for booking management
+---
 
-- React Navigation theme integration
+## 1. Animation
 
-- TypeScript for type safety
+A visible animation was added to the `BookingItem` component.
 
-## Context API
+When the ticket quantity changes, the quantity value briefly scales up and smoothly returns to its original size.
 
-The Context API is used to manage the global application theme.
+The animation is implemented using `react-native-reanimated` with:
 
-### Theme features
+- `useSharedValue`
+- `useAnimatedStyle`
+- `withSequence`
+- `withTiming`
+- `withSpring`
 
-- Light and Dark themes
-- Global theme state
-- Theme toggle from the Profile screen
-- Theme colors are centralized in `theme.ts`
-- React Navigation theme changes together with the application theme
+This provides visual feedback when the user increases or decreases the ticket quantity.
 
-### Implementation
+### Animation
 
-The main files are:
+[Ticket quantity animation](https://drive.google.com/file/d/16psDAnR91BX2o1HgCxmorQX7QA1nbJrL/view?usp=sharing)
 
-- `src/context/ThemeContext.tsx`
-- `src/constants/theme.ts`
-- `src/screens/ProfileScreen.tsx`
-- `src/screens/HomeScreen.tsx`
-- `src/navigation/RootNavigator.tsx`
+---
 
-## Screenshots
+## 2. Render Optimization
 
-### Context API - Light Theme
+The `EventCard` component is rendered multiple times on the Home screen, making it a suitable component for optimization.
 
-![Profile Light Theme](./screenshots/profile-light-mode.png)
+The following React optimization techniques were applied:
 
-### Context API - Dark Theme
+### React.memo
 
-![Profile Dark Theme](./screenshots/profile-dark.png)
+`EventCard` was wrapped with `React.memo()` to prevent unnecessary re-renders when its props have not changed.
 
-### Dark Theme Navigation
+### useCallback
 
-![Dark Navigation](./screenshots/drawer-dark.png)
+Event handlers and render functions were memoized with `useCallback` to keep stable function references.
 
-### Home Dark Theme
+### useMemo
 
-![Home Dark](./screenshots/home-dark.png)
+Derived event data, category data and styles were memoized with `useMemo` where appropriate.
 
+These optimizations reduce unnecessary work when the Home screen updates.
 
+### Before optimization
 
-## Redux Toolkit
+![Before optimization](screenshots/rerender-before.png)
 
-Redux Toolkit is used to manage global booking state.
+### After optimization
 
-### Booking features
+![After optimization](screenshots/rerender-after.png)
 
-- Add a booking after successful payment
-- Store event information
-- Store ticket type and quantity
-- Update ticket quantity
-- Remove/cancel a booking
-- Display bookings on the My Bookings screen
-- Calculate the booking total including the service fee
+---
 
-### Implementation
+## 3. Dependency Optimization
 
-The main Redux files are:
+The project was inspected for dependencies that could increase the JavaScript bundle size.
 
-- `src/redux/store.ts`
-- `src/redux/bookingsSlice.ts`
-- `src/screens/BookingConfirmedScreen.tsx`
-- `src/screens/BookingsScreen.tsx`
-- `src/components/BookingItem.tsx`
+`lucide-react-native` was identified as a significant contributor to the bundle.
 
+The icon library was kept because it is actively used in the application. 
+Instead, the imports were optimized to use individual icon modules, reducing the amount of unused icon code included in the bundle.
 
-## Screenshots
+### Before
 
-### Booking Confirmation
+```tsx
+import {
+    Search,
+    Heart,
+    ChevronLeft,
+} from 'lucide-react-native';
+```
 
-![Booking Confirmation](./screenshots/confirmed.png)
+### After
+```tsx
+import Search from 'lucide-react-native/icons/search';
+import Heart from 'lucide-react-native/icons/heart';
+import ChevronLeft from 'lucide-react-native/icons/chevron-left';
+```
+This allows Metro to include only the icon modules that are actually used by the application.
 
-### My Bookings
+All existing icons remain functional and visually unchanged.
 
-![My Bookings](./screenshots/mybookings.png)
+## 4. Bundle Analysis
 
-### Booking Cancellation
+The JavaScript bundle was analyzed using react-native-bundle-visualizer.
 
-![Booking Cancellation](./screenshots/%20cancelled-booking.png)
+### Before optimization
 
+* Bundle size: 8.52 MB
+* Unmapped content: 29.64%
 
-## State Management Architecture
+![Bundle before optimization](screenshots/bundle-before.png)
+![Bundle analysis before optimization](screenshots/before.png)
 
-### Context API
+### After optimization
 
-Theme state:
+* Bundle size: 5.66 MB
+* Unmapped content: 18.97%
 
-`ThemeProvider`
-→ `useTheme()`
-→ `ProfileScreen`
-→ `HomeScreen`
-→ `RootNavigator`
+![Bundle after optimization](screenshots/bundle-after.png)
+![Bundle analysis after optimization](screenshots/after.png)
 
-### Redux Toolkit
+The bundle size decreased by approximately 2.86 MB, which is about a 33.6% reduction compared with the initial bundle.
 
-Booking state:
+The optimization was achieved without removing any required application functionality.
 
-`Provider`
-→ `store`
-→ `bookingsSlice`
-→ `BookingConfirmedScreen`
-→ `BookingsScreen`
-→ `BookingItem`
+## 5. Dependency Cleanup
 
-### Live Demo
+Unused dependencies were also removed from the project.
 
-[🎥 Watch Live Demo](https://drive.google.com/file/d/1tfRE94KbJltq-BDQBSQwBBsIF8xUCUpM/view?usp=sharing)
+The following packages were removed because they were not used in the application:
+
+* @react-navigation/stack
+* @react-native/new-app-screen
+
+lucide-react-native was kept because the application uses its icons.
+
+## 6. Technologies
+
+* React Native
+* TypeScript
+* React Navigation
+* Redux Toolkit
+* React Context API
+* React Native Reanimated
+* React Native Gesture Handler
+* React Native SVG
+* Ticketmaster Discovery API
+* react-native-config

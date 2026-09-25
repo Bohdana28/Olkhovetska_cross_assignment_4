@@ -18,11 +18,9 @@ import {
     useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import {
-    ChevronDown,
-    MapPin,
-    SlidersHorizontal,
-} from 'lucide-react-native';
+import ChevronDown from 'lucide-react-native/icons/chevron-down';
+import MapPin from 'lucide-react-native/icons/map-pin';
+import SlidersHorizontal from 'lucide-react-native/icons/sliders-horizontal';
 
 import {
     searchEvents,

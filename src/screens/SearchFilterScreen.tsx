@@ -9,11 +9,9 @@ import {
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-    ChevronDown,
-    ChevronUp,
-    Search,
-} from 'lucide-react-native';
+import ChevronDown from 'lucide-react-native/icons/chevron-down';
+import ChevronUp from 'lucide-react-native/icons/chevron-up';
+import Search from 'lucide-react-native/icons/search';
 
 import { fetchCategories } from '../api/api';
 import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from '../constants/theme';

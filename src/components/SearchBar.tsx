@@ -4,7 +4,7 @@ import {
     View,
 } from 'react-native';
 
-import { Search } from 'lucide-react-native';
+import Search from 'lucide-react-native/icons/search';
 
 import {
     COLORS,

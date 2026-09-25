@@ -13,10 +13,8 @@ import {
     useState,
 } from 'react';
 
-import {
-    ChevronLeft,
-    Heart,
-} from 'lucide-react-native';
+import ChevronLeft from 'lucide-react-native/icons/chevron-left';
+import Heart from 'lucide-react-native/icons/heart';
 
 import {
     useSafeAreaInsets,

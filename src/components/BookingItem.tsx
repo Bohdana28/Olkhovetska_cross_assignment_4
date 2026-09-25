@@ -8,10 +8,18 @@ import {
     useWindowDimensions,
 } from 'react-native';
 
-import {
-    Minus,
-    Plus,
-} from 'lucide-react-native';
+import { useEffect } from 'react';
+
+import Minus from 'lucide-react-native/icons/minus';
+import Plus from 'lucide-react-native/icons/plus';
+
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withSequence,
+    withSpring,
+    withTiming,
+} from 'react-native-reanimated';
 
 import {
     COLORS,
@@ -42,6 +50,29 @@ export default function BookingItem({
     onQuantityChange,
 }: BookingItemProps) {
     const { width } = useWindowDimensions();
+
+    const quantityScale = useSharedValue(1);
+
+    useEffect(() => {
+    quantityScale.value = withSequence(
+        withTiming(1.15, {
+            duration: 100,
+        }),
+        withSpring(1, {
+            damping: 10,
+            stiffness: 200,
+        }),
+    );
+}, [quantityScale, quantity]);
+
+    const quantityAnimatedStyle =
+        useAnimatedStyle(() => ({
+            transform: [
+                {
+                    scale: quantityScale.value,
+                },
+            ],
+        }));
 
     const containerWidth = Math.min(
         327,
@@ -128,13 +159,14 @@ export default function BookingItem({
                             )}
                         </Pressable>
 
-                        <Text
-                            style={
-                                styles.quantityText
-                            }
+                        <Animated.Text
+                            style={[
+                                styles.quantityText,
+                                quantityAnimatedStyle,
+                            ]}
                         >
                             {quantity}
-                        </Text>
+                        </Animated.Text>
 
                         <Pressable
                             accessibilityRole="button"

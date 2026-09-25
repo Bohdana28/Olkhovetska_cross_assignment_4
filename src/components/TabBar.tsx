@@ -1,10 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import {
-    House,
-    Search,
-    Ticket,
-    User,
-} from "lucide-react-native";
+import House from 'lucide-react-native/icons/house';
+import Search from 'lucide-react-native/icons/search';
+import Ticket from 'lucide-react-native/icons/ticket';
+import User from 'lucide-react-native/icons/user';
 import { COLORS } from "../constants/theme";
 
 const styles = StyleSheet.create({

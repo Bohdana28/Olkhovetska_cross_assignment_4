@@ -2,12 +2,19 @@ import {
     ActivityIndicator,
     FlatList,
     Pressable,
+    ScrollView,
     StyleSheet,
     Text,
     View,
 } from 'react-native';
 
-import { useEffect, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -33,12 +40,24 @@ import {
 
 type Props = HomeStackScreenProps<'HomeScreen'>;
 
+interface EventCardData {
+    id: string;
+    title: string;
+    imageUrl: string;
+    date: string;
+    location: string;
+}
+
 export default function HomeScreen({
     navigation,
 }: Props) {
     const insets = useSafeAreaInsets();
     const { colors } = useTheme();
-    const styles = createStyles(colors);
+
+    const styles = useMemo(
+        () => createStyles(colors),
+        [colors],
+    );
 
     const [events, setEvents] = useState<
         TicketmasterEvent[]
@@ -59,7 +78,22 @@ export default function HomeScreen({
         null,
     );
 
+    /*
+     * Keeps the latest events available for the
+     * category fallback without recreating the
+     * category handler every time events change.
+     */
+    const eventsRef = useRef<
+        TicketmasterEvent[]
+    >([]);
+
     useEffect(() => {
+        eventsRef.current = events;
+    }, [events]);
+
+    useEffect(() => {
+        let isMounted = true;
+
         const loadInitialData = async () => {
             try {
                 setLoading(true);
@@ -73,345 +107,279 @@ export default function HomeScreen({
                     fetchCategories(),
                 ]);
 
+                if (!isMounted) {
+                    return;
+                }
+
                 setEvents(eventsData);
                 setCategories(categoriesData);
             } catch (err) {
+                if (!isMounted) {
+                    return;
+                }
+
                 setError(
                     err instanceof Error
                         ? err.message
                         : 'Failed to load data.',
                 );
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
 
         loadInitialData();
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
-    const handleSearchPress = () => {
+    const handleSearchPress = useCallback(() => {
         navigation
             .getParent()
             ?.navigate('Search');
-    };
+    }, [navigation]);
 
-    const handleSeeMorePress = () => {
+    const handleSeeMorePress = useCallback(() => {
         navigation
             .getParent()
             ?.navigate('Search');
-    };
+    }, [navigation]);
 
-    const handleCategorySelect = async (
-        category: string,
-    ) => {
-        setSelectedCategory(
-            category === 'All'
-                ? null
-                : category,
-        );
-
-        setEventsLoading(true);
-        setError(null);
-
-        if (category === 'All') {
-            try {
-                const data = await fetchEvents();
-
-                setEvents(data);
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : 'Failed to load events.',
-                );
-            } finally {
-                setEventsLoading(false);
-            }
-
-            return;
-        }
-
-        try {
-            const categoryEvents =
-                await fetchEventsByCategory(
-                    category,
-                );
-
-            /*
-             * If Ticketmaster returns events for the
-             * selected category, use them.
-             */
-            if (categoryEvents.length > 0) {
-                setEvents(categoryEvents);
-                return;
-            }
-
-            /*
-             * If there are no results from the API,
-             * filter the already loaded events locally.
-             * This prevents an empty screen when the
-             * current API result has no matching events.
-             */
-            const localEvents = events.filter(
-                event =>
-                    event.classifications?.some(
-                        classification =>
-                            classification.segment
-                                ?.name ===
-                            category,
-                    ) ?? false,
+    const handleEventPress = useCallback(
+        (eventId: string) => {
+            navigation.navigate(
+                'EventDetails',
+                {
+                    eventId,
+                },
             );
+        },
+        [navigation],
+    );
 
-            setEvents(localEvents);
-        } catch (err) {
-            /*
-             * If the category request itself fails,
-             * fall back to the events already loaded.
-             */
-            const localEvents = events.filter(
-                event =>
-                    event.classifications?.some(
-                        classification =>
-                            classification.segment
-                                ?.name ===
-                            category,
-                    ) ?? false,
-            );
+    const handleCategorySelect =
+        useCallback(
+            async (category: string) => {
+                const isAllCategory =
+                    category === 'All';
 
-            setEvents(localEvents);
-
-            /*
-             * Only show an error if the local fallback
-             * also has no events.
-             */
-            if (localEvents.length === 0) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : 'Failed to load category.',
+                setSelectedCategory(
+                    isAllCategory
+                        ? null
+                        : category,
                 );
-            }
-        } finally {
-            setEventsLoading(false);
-        }
-    };
 
-    const formatDate = (date?: string) => {
-        if (!date) {
-            return 'Date TBA';
-        }
+                setEventsLoading(true);
+                setError(null);
 
-        const parsedDate = new Date(date);
+                if (isAllCategory) {
+                    try {
+                        const data =
+                            await fetchEvents();
 
-        return parsedDate.toLocaleDateString(
-            'en-GB',
-            {
-                day: '2-digit',
-                month: 'short',
+                        setEvents(data);
+                    } catch (err) {
+                        setError(
+                            err instanceof Error
+                                ? err.message
+                                : 'Failed to load events.',
+                        );
+                    } finally {
+                        setEventsLoading(false);
+                    }
+
+                    return;
+                }
+
+                try {
+                    const categoryEvents =
+                        await fetchEventsByCategory(
+                            category,
+                        );
+
+                    if (
+                        categoryEvents.length > 0
+                    ) {
+                        setEvents(
+                            categoryEvents,
+                        );
+                        return;
+                    }
+
+                    const localEvents =
+                        eventsRef.current.filter(
+                            event =>
+                                event.classifications?.some(
+                                    classification =>
+                                        classification
+                                            .segment
+                                            ?.name ===
+                                        category,
+                                ) ?? false,
+                        );
+
+                    setEvents(localEvents);
+                } catch (err) {
+                    const localEvents =
+                        eventsRef.current.filter(
+                            event =>
+                                event.classifications?.some(
+                                    classification =>
+                                        classification
+                                            .segment
+                                            ?.name ===
+                                        category,
+                                ) ?? false,
+                        );
+
+                    setEvents(localEvents);
+
+                    if (
+                        localEvents.length === 0
+                    ) {
+                        setError(
+                            err instanceof Error
+                                ? err.message
+                                : 'Failed to load category.',
+                        );
+                    }
+                } finally {
+                    setEventsLoading(false);
+                }
             },
+            [],
         );
-    };
 
-    const getLocation = (
-        event: TicketmasterEvent,
-    ) => {
-        const venue =
-            event._embedded?.venues?.[0];
+    const formatDate = useCallback(
+        (date?: string) => {
+            if (!date) {
+                return 'Date TBA';
+            }
 
-        if (!venue) {
-            return 'Location TBA';
-        }
+            const parsedDate = new Date(date);
 
-        const city = venue.city?.name;
-        const venueName = venue.name;
+            return parsedDate.toLocaleDateString(
+                'en-GB',
+                {
+                    day: '2-digit',
+                    month: 'short',
+                },
+            );
+        },
+        [],
+    );
 
-        if (city && venueName) {
-            return `${venueName}, ${city}`;
-        }
+    const getLocation = useCallback(
+        (event: TicketmasterEvent) => {
+            const venue =
+                event._embedded?.venues?.[0];
 
-        return (
-            city ||
-            venueName ||
-            'Location TBA'
+            if (!venue) {
+                return 'Location TBA';
+            }
+
+            const city = venue.city?.name;
+            const venueName = venue.name;
+
+            if (city && venueName) {
+                return `${venueName}, ${city}`;
+            }
+
+            return (
+                city ||
+                venueName ||
+                'Location TBA'
+            );
+        },
+        [],
+    );
+
+    const getImage = useCallback(
+        (event: TicketmasterEvent) =>
+            event.images?.[0]?.url,
+        [],
+    );
+
+    const eventCardData =
+        useMemo<EventCardData[]>(
+            () =>
+                events
+                    .map(event => {
+                        const imageUrl =
+                            getImage(event);
+
+                        if (!imageUrl) {
+                            return null;
+                        }
+
+                        return {
+                            id: event.id,
+                            title: event.name,
+                            imageUrl,
+                            date: formatDate(
+                                event.dates
+                                    ?.start
+                                    ?.localDate,
+                            ),
+                            location:
+                                getLocation(event),
+                        };
+                    })
+                    .filter(
+                        (
+                            event,
+                        ): event is EventCardData =>
+                            event !== null,
+                    ),
+            [
+                events,
+                formatDate,
+                getImage,
+                getLocation,
+            ],
         );
-    };
 
-    const getImage = (
-        event: TicketmasterEvent,
-    ) => {
-        return event.images?.[0]?.url;
-    };
+    const categoryList = useMemo(
+        () => ['All', ...categories],
+        [categories],
+    );
 
-    const renderEventItem = ({
-        item,
-    }: {
-        item: TicketmasterEvent;
-    }) => {
-        const imageUrl = getImage(item);
-
-        if (!imageUrl) {
-            return null;
-        }
-
-        return (
+    const renderEventItem = useCallback(
+        ({
+            item,
+        }: {
+            item: EventCardData;
+        }) => (
             <EventCard
-                title={item.name}
-                imageUrl={{
-                    uri: imageUrl,
-                }}
-                date={formatDate(
-                    item.dates?.start
-                        ?.localDate,
-                )}
-                location={getLocation(item)}
-                onPress={() =>
-                    navigation.navigate(
-                        'EventDetails',
-                        {
-                            eventId: item.id,
-                        },
-                    )
+                title={item.title}
+                imageUrl={item.imageUrl}
+                date={item.date}
+                location={item.location}
+                eventId={item.id}
+                onPress={handleEventPress}
+            />
+        ),
+        [handleEventPress],
+    );
+
+    const keyExtractor = useCallback(
+        (item: EventCardData) => item.id,
+        [],
+    );
+
+    const renderSeparator = useCallback(
+        () => (
+            <View
+                style={
+                    styles.eventSeparator
                 }
             />
-        );
-    };
-
-    const renderHeader = () => (
-        <View style={styles.headerContent}>
-            {/* Header */}
-            <View style={styles.header}>
-                <Text style={styles.greeting}>
-                    Discover events
-                </Text>
-
-                <Text style={styles.title}>
-                    Find your next event
-                </Text>
-            </View>
-
-            {/* Search */}
-            <Pressable
-                onPress={handleSearchPress}
-                accessibilityRole="button"
-                accessibilityLabel="Open event search"
-                style={styles.searchContainer}
-            >
-                <View pointerEvents="none">
-                    <SearchBar
-                        value=""
-                        onChangeText={() => {}}
-                    />
-                </View>
-            </Pressable>
-
-            {/* Categories */}
-            <View
-                style={styles.categoryContainer}
-            >
-                <CategoryList
-                    categories={[
-                        'All',
-                        ...categories,
-                    ]}
-                    selectedCategory={
-                        selectedCategory ??
-                        'All'
-                    }
-                    onSelectCategory={
-                        handleCategorySelect
-                    }
-                />
-            </View>
-
-            {/* Near you */}
-            <View>
-                <View
-                    style={styles.sectionHeader}
-                >
-                    <Text
-                        style={styles.sectionTitle}
-                    >
-                        Near you
-                    </Text>
-
-                    <Pressable
-                        onPress={
-                            handleSeeMorePress
-                        }
-                        accessibilityRole="button"
-                    >
-                        <Text
-                            style={styles.seeMore}
-                        >
-                            See more
-                        </Text>
-                    </Pressable>
-                </View>
-
-                {eventsLoading ? (
-                    <View
-                        style={
-                            styles.eventsLoading
-                        }
-                    >
-                        <ActivityIndicator
-                            size="small"
-                            color={colors.primary}
-                        />
-
-                        <Text
-                            style={
-                                styles.loadingText
-                            }
-                        >
-                            Loading events...
-                        </Text>
-                    </View>
-                ) : error ? (
-                    <Text
-                        style={
-                            styles.inlineError
-                        }
-                    >
-                        {error}
-                    </Text>
-                ) : events.length === 0 ? (
-                    <Text
-                        style={
-                            styles.emptyText
-                        }
-                    >
-                        No events found for this
-                        category.
-                    </Text>
-                ) : (
-                    <FlatList
-                        data={events}
-                        horizontal
-                        renderItem={
-                            renderEventItem
-                        }
-                        keyExtractor={item =>
-                            item.id
-                        }
-                        showsHorizontalScrollIndicator={
-                            false
-                        }
-                        contentContainerStyle={
-                            styles.horizontalList
-                        }
-                        ItemSeparatorComponent={() => (
-                            <View
-                                style={{
-                                    width:
-                                        SPACING.md,
-                                }}
-                            />
-                        )}
-                    />
-                )}
-            </View>
-        </View>
+        ),
+        [styles.eventSeparator],
     );
 
     if (loading) {
@@ -460,7 +428,7 @@ export default function HomeScreen({
     }
 
     return (
-        <View
+        <ScrollView
             style={[
                 styles.container,
                 {
@@ -468,25 +436,163 @@ export default function HomeScreen({
                         insets.top,
                 },
             ]}
+            contentContainerStyle={[
+                styles.content,
+                {
+                    paddingBottom:
+                        insets.bottom +
+                        SPACING.lg,
+                },
+            ]}
+            showsVerticalScrollIndicator={
+                false
+            }
         >
-            <FlatList
-                data={[]}
-                ListHeaderComponent={
-                    renderHeader
+            <View style={styles.header}>
+                <Text
+                    style={styles.greeting}
+                >
+                    Discover events
+                </Text>
+
+                <Text style={styles.title}>
+                    Find your next event
+                </Text>
+            </View>
+
+            <Pressable
+                onPress={
+                    handleSearchPress
                 }
-                showsVerticalScrollIndicator={
-                    false
+                accessibilityRole="button"
+                accessibilityLabel="Open event search"
+                style={
+                    styles.searchContainer
                 }
-                contentContainerStyle={[
-                    styles.content,
-                    {
-                        paddingBottom:
-                            insets.bottom +
-                            SPACING.lg,
-                    },
-                ]}
-            />
-        </View>
+            >
+                <View pointerEvents="none">
+                    <SearchBar
+                        value=""
+                        onChangeText={() => {}}
+                    />
+                </View>
+            </Pressable>
+
+            <View
+                style={
+                    styles.categoryContainer
+                }
+            >
+                <CategoryList
+                    categories={
+                        categoryList
+                    }
+                    selectedCategory={
+                        selectedCategory ??
+                        'All'
+                    }
+                    onSelectCategory={
+                        handleCategorySelect
+                    }
+                />
+            </View>
+
+            <View>
+                <View
+                    style={
+                        styles.sectionHeader
+                    }
+                >
+                    <Text
+                        style={
+                            styles.sectionTitle
+                        }
+                    >
+                        Near you
+                    </Text>
+
+                    <Pressable
+                        onPress={
+                            handleSeeMorePress
+                        }
+                        accessibilityRole="button"
+                        accessibilityLabel="See more events"
+                    >
+                        <Text
+                            style={
+                                styles.seeMore
+                            }
+                        >
+                            See more
+                        </Text>
+                    </Pressable>
+                </View>
+
+                {eventsLoading ? (
+                    <View
+                        style={
+                            styles.eventsLoading
+                        }
+                    >
+                        <ActivityIndicator
+                            size="small"
+                            color={
+                                colors.primary
+                            }
+                        />
+
+                        <Text
+                            style={
+                                styles.loadingText
+                            }
+                        >
+                            Loading events...
+                        </Text>
+                    </View>
+                ) : error ? (
+                    <Text
+                        style={
+                            styles.inlineError
+                        }
+                    >
+                        {error}
+                    </Text>
+                ) : eventCardData.length ===
+                  0 ? (
+                    <Text
+                        style={
+                            styles.emptyText
+                        }
+                    >
+                        No events found for this
+                        category.
+                    </Text>
+                ) : (
+                    <FlatList
+                        data={eventCardData}
+                        horizontal
+                        renderItem={
+                            renderEventItem
+                        }
+                        keyExtractor={
+                            keyExtractor
+                        }
+                        showsHorizontalScrollIndicator={
+                            false
+                        }
+                        contentContainerStyle={
+                            styles.horizontalList
+                        }
+                        ItemSeparatorComponent={
+                            renderSeparator
+                        }
+                        initialNumToRender={5}
+                        windowSize={5}
+                        removeClippedSubviews
+                    />
+                )}
+            </View>
+        </ScrollView>
     );
 }
 
@@ -511,10 +617,6 @@ const createStyles = (colors: {
 
         content: {
             padding: SPACING.lg,
-        },
-
-        headerContent: {
-            gap: 0,
         },
 
         header: {
@@ -545,7 +647,8 @@ const createStyles = (colors: {
         sectionHeader: {
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent:
+                'space-between',
             marginBottom: SPACING.sm,
         },
 
@@ -563,6 +666,10 @@ const createStyles = (colors: {
 
         horizontalList: {
             paddingRight: SPACING.lg,
+        },
+
+        eventSeparator: {
+            width: SPACING.md,
         },
 
         eventsLoading: {
@@ -596,7 +703,8 @@ const createStyles = (colors: {
             flex: 1,
             justifyContent: 'center',
             alignItems: 'center',
-            paddingHorizontal: SPACING.lg,
+            paddingHorizontal:
+                SPACING.lg,
             backgroundColor:
                 colors.background,
         },

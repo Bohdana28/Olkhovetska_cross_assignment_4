@@ -1,6 +1,6 @@
+import { memo } from 'react';
 import {
     Image,
-    ImageSourcePropType,
     StyleSheet,
     Text,
     useWindowDimensions,
@@ -18,17 +18,19 @@ import CustomButton from './CustomButton';
 
 interface EventCardProps {
     title: string;
-    imageUrl: ImageSourcePropType;
+    imageUrl: string;
     date: string;
     location: string;
-    onPress: () => void;
+    eventId: string;
+    onPress: (eventId: string) => void;
 }
 
-export default function EventCard({
+function EventCard({
     title,
     imageUrl,
     date,
     location,
+    eventId,
     onPress,
 }: EventCardProps) {
     const { width } =
@@ -37,6 +39,11 @@ export default function EventCard({
     const cardWidth = Math.min(
         250,
         width - SPACING.lg * 2,
+    );
+
+    console.log(
+        'EventCard rendered:',
+        title,
     );
 
     return (
@@ -49,7 +56,7 @@ export default function EventCard({
             ]}
         >
             <Image
-                source={imageUrl}
+                source={{ uri: imageUrl }}
                 style={[
                     styles.imageCard,
                     {
@@ -84,7 +91,9 @@ export default function EventCard({
                 <CustomButton
                     title="View event"
                     variant="secondary"
-                    onPress={onPress}
+                    onPress={() =>
+                        onPress(eventId)
+                    }
                     style={{
                         ...styles.cardButton,
                         width:
@@ -116,7 +125,8 @@ const styles = StyleSheet.create({
         width: 61,
         height: 24,
         borderRadius: RADIUS.sm,
-        backgroundColor: COLORS.primary,
+        backgroundColor:
+            COLORS.primary,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -156,3 +166,5 @@ const styles = StyleSheet.create({
         marginTop: 'auto',
     },
 });
+
+export default memo(EventCard);
